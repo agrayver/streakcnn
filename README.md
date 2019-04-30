@@ -1,5 +1,7 @@
 # Streaks CNN
-We use Convolutional Neural Networks to analyse turbulent fluid flows with streak imaging
+We use Convolutional Neural Networks to analyse turbulent fluid flows with streak imaging.
+If you use this network or ideas presented here, please cite:
+Super-Duper Paper, AG and JN (?), Journal XXX, 2019
 
 ## Dependencies
 
