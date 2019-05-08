@@ -10,3 +10,4 @@ Super-Duper Paper, AG and JN (?), Journal XXX, 2019
 * Matplotlib > 3.0
 * SciPy > 1.2
 * Scikit-Learn > 0.2
+* h5py > 2.5
