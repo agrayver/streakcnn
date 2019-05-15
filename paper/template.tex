@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%% file template.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a general template file for the LaTeX package SVJour3
+% for Springer journals.          Springer Heidelberg 2010/09/16
+%
+% Copy it to a new file with a new name and use it as the basis
+% for your article. Delete % signs as needed.
+%
+% This template includes a few options for different layouts and
+% content for various journals. Please consult a previous issue of
+% your journal as needed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage{fix-cm}
+%
+\documentclass{svjour3}                     % onecolumn (standard format)
+%\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
+%\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+%\documentclass[twocolumn]{svjour3}          % twocolumn
+%
+\smartqed  % flush right qed marks, e.g. at end of proof
+%
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{Particle streak velocimetry using Convolutional Neural Networks}
+\titlerunning{Streaks imaging with CNN}        % if too long for running head
+
+\author{Alexander V. Grayver         \and
+        Jerome Noir
+}
+
+\institute{A. V. Grayver \at
+              Institute of Geophysics, ETH Zurich \\
+              Sonneggstrasse 5 \\
+							8092 Zurich, Switzerland \\
+              Tel.: +41-44-6333154\\
+              \email{agrayver@erdw.ethz.ch}
+              \and
+           J. Noir \at
+					    Institute of Geophysics, ETH Zurich \\
+              Sonneggstrasse 5 \\
+							8092 Zurich, Switzerland \\
+              Tel.: +41-44-6337593\\
+              \email{jerome.noir@erdw.ethz.ch}
+}
+
+\date{Received: - / Accepted: -}
+
+
+\maketitle
+
+\begin{abstract}
+Insert your abstract here. 
+\keywords{First keyword \and Second keyword \and More}
+% \PACS{PACS code1 \and PACS code2 \and more}
+% \subclass{MSC code1 \and MSC code2 \and more}
+\end{abstract}
+
+\section{Introduction}
+\label{intro}
+
+Cite \cite{raffel2018particle}
+
+\section{Methods}
+\label{sec:methodology}
+
+\begin{equation}
+a^2+b^2=c^2
+\end{equation}
+
+%\begin{figure*}
+%\includegraphics[width=\textwidth]{example.eps}
+%\caption{Please write your figure caption here}
+%\label{fig:fig1}
+%\end{figure*}
+
+\section{Results}
+
+\subsection{Network accuracy}
+
+\subsection{Validation with DNS}
+
+\subsection{Validation with experimental images}
+
+\section{Conclusions}
+
+The Juoyter Python notebooks of all programs used in this study can be found on the github \textit{Give link}.
+
+\begin{acknowledgements}
+Thank PyTorch/mathplotlib/etc authors, Meredith for DNS, Adrian for discussions.
+\end{acknowledgements}
+
+
+% References
+%\bibliographystyle{spbasic}      % basic style, author-year citations
+\bibliographystyle{spmpsci}      % mathematics and physical sciences
+%\bibliographystyle{spphys}       % APS-like style for physics
+\bibliography{refs}
+
+% Non-BibTeX users please use
+%\begin{thebibliography}{}
+
+%\end{thebibliography}
+
+\end{document}
+
