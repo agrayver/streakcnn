@@ -60,7 +60,11 @@ Insert your abstract here.
 \section{Introduction}
 \label{intro}
 
-Particle Image Velocimetry (PIV) is arguably the most widely used technique to study experimental flows quantitatively \cite{raffel2018particle}. A common wokflow would consist of seeding luminescent particles and taking pairs of pictures, which register an instantaneous flow state. By splitting a pair of images into (possibly overlapping) windows and using cross-correlation between the frames, one infers the direction and magnitude. With modern computers and digital cameras, PIV has experienced wide adoption in the community \cite{JN}. For cross-correlation to work properly, one needs to ensure that the exposure time is short enough such that particles do not move more than few pixels at most. Violating this condition, for instance because of insufficient laser intensity or too fast flow, results in so called 
+Particle Image Velocimetry (PIV) is arguably the most widely used technique to quantitatively study experimental flows \cite{raffel2018particle}. A common work-flow would consist of seeding flow with luminescent particles and taking pairs of pictures with known time separation, which capture an instantaneous flow state. By splitting a pair of images into (possibly overlapping) windows and cross-correlating between the them allows one to infer the direction and magnitude of the flow. With modern computers and digital cameras, PIV has experienced wide adoption in the scientific community \cite{JN}. For cross-correlation to work properly, one has to ensure that the exposure time is short enough such that particles do not move more than few pixels at most on an image. Violating this condition, for instance because of insufficient laser intensity or too fast flow, results in so called streaks. 
+
+Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques largely inapplicable. When flow speed imposes conditions for which camera and light source at hand cannot capture steady particles, one either has to use high-speed camera or use stronger light source. Both of these solutions have financial and safety consequences, which often cannot be fulfilled. Although not suitable for conventional cross-correlation methods, streak images do contain information about the flow. Our brain does recognize flow structure by looking at streaks. Specifically, one does not know direction, but information on the magnitude and azimuth is preserved in a single streak image. Motivated by this and having often ran into a problem of streaks in our flow experiments, we designed a method to extract information about the flow from streaks. 
+
+To this end, we applied Convolutional Neural Networks (CNN) trained on streak images to predict flow speed and azimuth.
 
 \section{Methods}
 \label{sec:methodology}
@@ -104,4 +108,3 @@ Thank PyTorch/mathplotlib/etc authors, Meredith for DNS, Adrian for discussions.
 %\end{thebibliography}
 
 \end{document}
-
