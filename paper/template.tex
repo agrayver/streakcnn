@@ -22,6 +22,8 @@
 \smartqed  % flush right qed marks, e.g. at end of proof
 %
 \usepackage{graphicx}
+\usepackage[numbers]{natbib}
+\usepackage{hyperref}
 
 \begin{document}
 
@@ -58,26 +60,44 @@ Insert your abstract here.
 \end{abstract}
 
 \section{Introduction}
-\label{intro}
+\label{sec:intro}
 
-Particle Image Velocimetry (PIV) is arguably the most widely used technique to quantitatively study experimental flows \cite{raffel2018particle}. A common work-flow would consist of seeding flow with luminescent particles and taking pairs of pictures with known time separation, which capture an instantaneous flow state. By splitting a pair of images into (possibly overlapping) windows and cross-correlating between the them allows one to infer the direction and magnitude of the flow. With modern computers and digital cameras, PIV has experienced wide adoption in the scientific community \cite{JN}. For cross-correlation to work properly, one has to ensure that the exposure time is short enough such that particles do not move more than few pixels at most on an image. Violating this condition, for instance because of insufficient laser intensity or too fast flow, results in so called streaks. 
+Particle Image Velocimetry (PIV) is arguably the most widely used technique to quantitatively study experimental flows \cite{raffel2018particle}. A common work-flow would consist of seeding flow with luminescent particles and taking pairs of pictures with known time separation, which capture an instantaneous flow state. By splitting a pair of images into (possibly overlapping) windows and cross-correlating between the them allows one to infer the direction and magnitude of the flow. With modern computers and digital cameras, PIV has experienced wide adoption in the scientific community \textbf{add refs}. For cross-correlation to work properly, one has to ensure that the exposure time is short enough such that particles do not move more than few pixels at most on an image. Violating this condition, for instance because of insufficient laser intensity or too fast flow, results in so called streaks - traces of particles.
 
-Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques largely inapplicable. When flow speed imposes conditions for which camera and light source at hand cannot capture steady particles, one either has to use high-speed camera or use stronger light source. Both of these solutions have financial and safety consequences, which often cannot be fulfilled. Although not suitable for conventional cross-correlation methods, streak images do contain information about the flow. Our brain does recognize flow structure by looking at streaks. Specifically, one does not know direction, but information on the magnitude and azimuth is preserved in a single streak image. Motivated by this and having often ran into a problem of streaks in our flow experiments, we designed a method to extract information about the flow from streaks. 
+Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques largely inapplicable. When flow velocity imposes constraints for which the camera and light source at hand cannot capture steady particles, one either has to use a higher speed camera or/and a stronger light source. Both of these solutions have financial and safety constraints, which often cannot be fulfilled. Although not suitable for conventional cross-correlation methods, streak images do contain information about the flow. Although one does not know the direction, information on the mean velocity magnitude and azimuth can be inferred from streak images. There appears to be few attempts to do this, which motivated us to design a method for extracting information about the flow from streaks. 
 
-To this end, we applied Convolutional Neural Networks (CNN) trained on streak images to predict flow speed and azimuth.
+To this end, we applied Convolutional Neural Networks (CNN) trained on streak images to predict flow speed and azimuth. The potential of CNNs has long been understood for applications related to the face and handwriting recognition \cite{lawrence1997face, simard2003best}, although their power has been fully discovered only recently when deeper (that is, with more layers) networks became feasible to train within reasonable amount of time, mostly due to emerge of Graphic Processor Units (GPUs) \cite{krizhevsky2012imagenet, karpathy2014large}. An interested reader is referred to a recent overview of the deep learning with important development milestones listed \cite{lecun2015deep}.
+
+Before we proceed to describing methodology and results, it is worth to mention that a crucial ingredient to a success of CNNs is a suitably large training set, which a CNN is supposed to learn from without facing an over-fitting. From this perspective, streak analysis appears almost an ideal problem. Similar to PIV, we make a reasonable assumption that within a sufficiently small interrogation window velocity exhibits simple functional form (for instance, constant or linear function). This allows us to quickly generate an unlimited number of training images. Adding variability in number of streaks per window, their thickness and intensity will well mimic a realistic experimental scenario. Therefore, we can exhaustively sample the parameter space and feed the network with as many sample as needed to attain an acceptable accuracy. The specific numbers and parameters will be discussed in the corresponding sections below.
 
 \section{Methods}
 \label{sec:methodology}
 
-\begin{equation}
-a^2+b^2=c^2
-\end{equation}
+\subsection{Problem setup}
 
-%\begin{figure*}
-%\includegraphics[width=\textwidth]{example.eps}
-%\caption{Please write your figure caption here}
-%\label{fig:fig1}
-%\end{figure*}
+We aim at inferring the displacement and azimuth from a gray scale image of size $n \times n$ pixels depicting streaks (Figure \ref{fig:fig1}). In real settings, these images are excerpts (for instance, after applying sliding window) of a larger $N \times N$ pixels image taken by a camera. For purposes of our experiments, we chose $n = 48$, but the approach presented here is general. We assume that within $n \times n$ window, the velocity is a constant, thus streaks have the same length and direction with small variations, treated as noise. In contrast, the number of streaks ($[2, 10]$), their color intensity ($[200, 255]$, where 0 is black and 255 is white) and thickness ($[2, 4]$ pixels) vary. Additionally, streaks are allowed to go outside the image, which is often the case in real settings, thus a CNN is supposed to be resilient to such cases. The maximum displacement, $r_\textnormal{max}$, of a particle within an image is assumed to be a half of the chosen window size, that is $r_\textnormal{max} = 24$ pixels in our case. Each streak is thus characterized by two numbers $\Delta, \phi$, denoting displacement and azimuth, respectively. 
+
+To generate train images, we sample $\Delta$ and $\phi$ from the distributions
+\begin{equation}
+\Delta \sim \sqrt{U(0, 1)} \cdot r_\textnormal{max}
+\end{equation}
+and
+\begin{equation}
+\phi \sim U(-\pi/2, \pi/2),
+\end{equation}
+respectively. This choice ensures that we sample a half-circle of radius $r_\textnormal{max}$ uniformly. $\phi = 0$ corresponds to the positive $x$-axis. Note that limits for $\phi$ cover only half of the circle since we have inherent ambiguity with respect to the direction. Figure \ref{fig:fig1} shows a selection of streak images generated using stated procedure. The outlined procedure enables generation of millions of images in just a few minutes on a regular PC. 
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure1.png}
+\caption{Subset of generated streak images with corresponding displacements and azimuth angles given in titles used for training and validation.}
+\label{fig:fig1}
+\end{figure}
+
+\subsection{Network architecture}
+
+Add a sketch of network. 
+
+\subsection{Implementation}
 
 \section{Results}
 
@@ -89,10 +109,13 @@ a^2+b^2=c^2
 
 \section{Conclusions}
 
-The Juoyter Python notebooks of all programs used in this study can be found on the github \textit{Give link}.
+Extension: non-constant velocity (polynomials -> more output variables and possibly deeper network).
+Streak localization and tracking: more complex architectures.
+
+
 
 \begin{acknowledgements}
-Thank PyTorch/mathplotlib/etc authors, Meredith for DNS, Adrian for discussions.
+We thank authors of PyTorch, mathplotlib and h5py python packages for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. The Juoyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
 \end{acknowledgements}
 
 
