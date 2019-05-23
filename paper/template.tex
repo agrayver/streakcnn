@@ -85,7 +85,7 @@ and
 \begin{equation}
 \phi \sim U(-\pi/2, \pi/2),
 \end{equation}
-respectively. This choice ensures that we sample a half-circle of radius $r_\textnormal{max}$ uniformly. $\phi = 0$ corresponds to the positive $x$-axis. Note that limits for $\phi$ cover only half of the circle since we have inherent ambiguity with respect to the direction. Figure \ref{fig:fig1} shows a selection of streak images generated using stated procedure. The outlined procedure enables generation of millions of images in just a few minutes on a regular PC. 
+respectively. This choice ensures that we sample a half-circle of radius $r_\textnormal{max}$ uniformly. $\phi = 0$ corresponds to the positive $x$-axis and increases clockwise. Note that limits for $\phi$ cover only half of the circle since we have inherent ambiguity with respect to the direction. Figure \ref{fig:fig1} shows a selection of streak images generated using stated procedure. The outlined procedure enables generation of millions of images in just a few minutes on a regular PC. 
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure1.png}
@@ -95,7 +95,12 @@ respectively. This choice ensures that we sample a half-circle of radius $r_\tex
 
 \subsection{Network architecture}
 
-Add a sketch of network. 
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure2.png}
+\caption{Architecture of the network. Left: sequence of layers and corresponding parameters in the brackets. Each CUNIT layer consists of four actual layers listed in the middle column. Relevant layer parameters are given on the right. Total number of learnable parameters in the network is 44370.}
+\label{fig:fig1}
+\end{figure}
+
 
 \subsection{Implementation}
 
