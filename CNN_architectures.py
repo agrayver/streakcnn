@@ -29,7 +29,7 @@ class StreaksCNN(torch.nn.Module):
             torch.nn.BatchNorm2d(32)
         )
 
-        self.dropout = torch.nn.Dropout2d(0.2) 
+        self.dropout = torch.nn.Dropout2d(0.3) 
                 
         #1152 input features, 2 output features (see sizing flow below)
         self.fc1 = torch.nn.Linear(6 * 6 * 32, 2)
