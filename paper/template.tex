@@ -27,7 +27,7 @@
 
 \begin{document}
 
-\title{Particle streak velocimetry using Convolutional Neural Networks}
+\title{Particle streak velocimetry using Ensemble Convolutional Neural Networks}
 \titlerunning{Streaks imaging with CNN}        % if too long for running head
 
 \author{Alexander V. Grayver         \and
@@ -75,9 +75,9 @@ Before we proceed to describing methodology and results, it is worth to mention 
 
 \subsection{Problem setup}
 
-We aim at inferring the displacement and azimuth from a gray scale image of size $n \times n$ pixels depicting streaks (Figure \ref{fig:fig1}). In real settings, these images are excerpts (for instance, after applying sliding window) of a larger $N \times N$ pixels image taken by a camera. For purposes of our experiments, we chose $n = 48$, but the approach presented here is general. We assume that within $n \times n$ window, the velocity is a constant, thus streaks have the same length and direction with small variations, treated as noise. In contrast, the number of streaks ($[2, 10]$), their color intensity ($[200, 255]$, where 0 is black and 255 is white) and thickness ($[2, 4]$ pixels) vary. Additionally, streaks are allowed to go outside the image, which is often the case in real settings, thus a CNN is supposed to be resilient to such cases. The maximum displacement, $r_\textnormal{max}$, of a particle within an image is assumed to be a half of the chosen window size, that is $r_\textnormal{max} = 24$ pixels in our case. Each streak is thus characterized by two numbers $\Delta, \phi$, denoting displacement and azimuth, respectively. 
+We aim at inferring the displacement and azimuth from a gray scale image of size $n \times n$ pixels depicting streaks (Figure \ref{fig:fig1}). In real settings, these images are excerpts (obtained, for instance, after applying a sliding window) of a larger $N \times N$ pixels image taken by a camera. For purposes of our experiments, we chose $n = 48$, but the approach presented below is general. We assume that within $n \times n$ window, the velocity is a constant, thus streaks have the same length and direction with small variations, treated as noise. In contrast, the number of streaks ($[2, 10]$), their color intensity ($[200, 255]$, where 0 is black and 255 is white) and thickness ($[2, 4]$ pixels) vary. Additionally, streaks are allowed to go outside the image, which is often the case in real settings, thus a CNN is supposed to be resilient to such cases. The maximum displacement, $r_\textnormal{max}$, of a particle within an image is assumed to be a half of the chosen window size, that is $r_\textnormal{max} = 24$ pixels in our case. Each streak is thus characterized by two numbers $\Delta, \phi$, denoting displacement and azimuth, respectively. 
 
-To generate train images, we sample $\Delta$ and $\phi$ from the distributions
+To generate train images, we sampled $\Delta$ and $\phi$ from the distributions
 \begin{equation}
 \Delta \sim \sqrt{U(0, 1)} \cdot r_\textnormal{max}
 \end{equation}
@@ -85,7 +85,7 @@ and
 \begin{equation}
 \phi \sim U(-\pi/2, \pi/2),
 \end{equation}
-respectively. This choice ensures that we sample a half-circle of radius $r_\textnormal{max}$ uniformly. $\phi = 0$ corresponds to the positive $x$-axis and increases clockwise. Note that limits for $\phi$ cover only half of the circle since we have inherent ambiguity with respect to the direction. Figure \ref{fig:fig1} shows a selection of streak images generated using stated procedure. The outlined procedure enables generation of millions of images in just a few minutes on a regular PC. 
+respectively. This choice ensures that we sample a half-circle of radius $r_\textnormal{max}$ uniformly. $\phi = 0$ corresponds to the positive $x$-axis and increases clockwise. Note that limits for $\phi$ cover only half of the circle since we have inherent ambiguity with respect to the direction. Figure \ref{fig:fig1} shows a selection of streak images generated using the stated procedure. The outlined procedure enables generation of millions of images in just a few minutes on a regular PC. 
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure1.png}
@@ -93,7 +93,9 @@ respectively. This choice ensures that we sample a half-circle of radius $r_\tex
 \label{fig:fig1}
 \end{figure}
 
-\subsection{Network architecture}
+\subsection{Network architecture and implementation}
+
+To prevent overfitting and improve representative power of the network, we added batch normalization at the end of each convolution unit \cite{ioffe2015batch} and dropout with the 30\% drop fraction \cite{srivastava2014dropout}.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure2.png}
@@ -101,8 +103,9 @@ respectively. This choice ensures that we sample a half-circle of radius $r_\tex
 \label{fig:fig2}
 \end{figure}
 
+To increase accuracy and robustness of the prediction \cite{hinton2015distilling}, we trained an ensemble of networks, which consists of 10 networks. All networks have identical architecture and parameters, but trained using different randomly chosen initial weights \cite{glorot2010understanding, he2015delving} and shuffled batched, thus forming a unique sequence of batches supplied to ADAM optimizer. The outputs of all models are averaged to get a final prediction.
 
-\subsection{Implementation}
+Finally, the network was implemented using the PyTorch library. The complete implementation can be found using the link below.
 
 \section{Results}
 
@@ -116,8 +119,6 @@ respectively. This choice ensures that we sample a half-circle of radius $r_\tex
 
 Extension: non-constant velocity (polynomials -> more output variables and possibly deeper network).
 Streak localization and tracking: more complex architectures.
-
-
 
 \begin{acknowledgements}
 We thank authors of PyTorch, mathplotlib and h5py python packages for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. The Juoyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
