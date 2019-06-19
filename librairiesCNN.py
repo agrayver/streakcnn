@@ -14,10 +14,9 @@ from PIL import ImageOps
 from PIL import ImageFilter
 from PIL.ImageChops import lighter as ImComb
 
-
-from skimage.transform import resize
 from scipy.ndimage.filters import gaussian_filter
 import time
+import skimage
 
 import torch
 import math
@@ -25,9 +24,7 @@ import torchvision
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.preprocessing import StandardScaler
 
-
-
-#classes
+# Classes
 class DNS_StreakImageGenerator:
     def __init__(self, x,y,u,v,densityParticle,radius,CNN_width,CNN_height):
         self.x = x
@@ -55,7 +52,6 @@ class DNS_StreakImageGenerator:
                 images[i,0,:,:] = imStreaksNoFilter;
             else:
                 data = np.array(imStreaksNoFilter.getdata(), dtype=float);
-                print(data.shape)
                 data *= random.uniform(0.1, 10, size=len(data))
                 imStreaksNoFilter.putdata(data)
                 image = imStreaksNoFilter.filter(ImageFilter.GaussianBlur(radius = sigma))
@@ -65,8 +61,8 @@ class DNS_StreakImageGenerator:
                 images[i,0,:,:] =image
                                
         return images
-#functions
-
+    
+# Functions
 def splitImage(processImage,CNN_width,CNN_height,overlap):
     import numpy as np
     
@@ -77,7 +73,6 @@ def splitImage(processImage,CNN_width,CNN_height,overlap):
     Nh=(height-CNN_height)//(CNN_height-overlap)
     _subwindow = np.zeros((Nh*Nw, CNN_width, CNN_height))
 
-    
     _x=np.zeros(Nh*Nw)
     _y=np.zeros(Nh*Nw)
     indxInterogationWindow=0
@@ -143,61 +138,7 @@ def windowAveraging(displacement,angle,CNN_width,CNN_height,overlap):
 
  
 
-    return x,y,meanDisplacement,meanAngle, Nh,Nw
-
-
-# def sliding_window(image, stepSize, windowSize):
-# 	# slide a window across the image
-# 	for x in range(0, image.shape[0], stepSize):
-# 		for y in range(0, image.shape[1], stepSize):
-# 			# yield the current window
-# 			yield (x, y, image[x:x + windowSize[0], y:y + windowSize[1]])
-            
-
-def getVelocityFromMeredith(fileName):
-    from NLMLib import SpectralState, PhysicalState
-    import numpy as np
-
-    # Use either SpectralState() or PhysicalState() depending on the file you are reading
-    my_state = PhysicalState(fileName,'cartesian')
-    #Cartesian: !!! 3D structures A=(..z,..y,..x)
-
-    # Read time and timestep
-    time = my_state.parameters.time
-    print('time: ', time)
-    timestep = my_state.parameters.timestep
-    print('timestep: ', timestep)
-
-    # Read problem specific
-    # Example:  my_state_spectral.parameters.<parameterName>
-    # Read mesh
-    # Example:  my_state_physical.grid_x,grid_r,...
-
-    # Read fields from my_state_physical.fields.FIELDS
-    # Example:  my_state_physical.fields.velocityz, my_state_spectral.fields.velocity_tor
-
-    Nx=my_state.grid_x.shape[0]
-    Ny=my_state.grid_y.shape[0]
-    #yGrid=np.arange(0,my_state.grid_y.shape[0])
-
-    z0=np.arange(0,my_state.grid_z.shape[0])
-    indx=np.int(np.floor(z0.shape[0]/2))
-    # x0,y0=np.meshgrid(np.arange(0,my_state.grid_x.shape[0]),\
-    #                  np.arange(0,my_state.grid_y.shape[0]))
-
-    x0,y0=my_state.grid_x, my_state.grid_y
-    _x0=np.arange(x0.shape[0])
-    _y0=np.arange(y0.shape[0])
-
-    psi=np.transpose(my_state.fields.streamfunction)
-    psi0=psi[:,:,indx]
-
-
-    dpsix,dpsiy=np.gradient(psi0)
-    u0=dpsiy
-    v0=-dpsix
-    w0=my_state.fields.velocityz[:,:,indx]
-    return _x0,_y0,u0,v0
+    return x,y,meanDisplacement,meanAngle, Nh,Nw       
 
 def generateStreakImageDNS(Nparticle,particleRadius,x,y,u,v):
     from PIL import Image
@@ -227,40 +168,6 @@ def generateStreakImageDNS(Nparticle,particleRadius,x,y,u,v):
 
     return im,_x0[indx],_y0[indx],_Dx[indx],_Dy[indx]
 
-# def interpolate_velocity(_x0,_y0,u0,v0,_x,_y):
-#     from scipy import interpolate
-#     import numpy as np
-
-#     width=_x.shape[0]
-#     height=_y.shape[0]
-    
-
-#     #rescale the coordinates and the velocity for the interpolation function
-#     if width>height:
-#         lscale=width/_x0.shape[0]
-#     else:
-#         lscale=height/_y0.shape[0]
-       
- 
-#     _x0map=_x0*lscale
-#     _y0map=_y0*lscale
-#     umap=u0*lscale
-#     vmap=v0*lscale
-
-
-#     #interpolation function for the velocity
-#     interpU = interpolate.interp2d(_x0map, _y0map, umap, kind='linear')
-#     interpV = interpolate.interp2d(_x0map, _y0map, vmap, kind='linear')
-    
-
-#     #interpolate the velocity from u0,v0
-#     u=interpU(_x,_y)
-#     v=interpV(_x,_y)
-
-#     return u,v
-
-
-
 def getEnergySpectrum(x1,y1,z):
     '''
     densitySpectrum(x1,y1,z)
@@ -289,7 +196,6 @@ def getEnergySpectrum(x1,y1,z):
     _k=np.sqrt(kxgrid**2+kygrid**2)
     dk=np.max([np.mean(np.abs(np.diff(kx))),np.mean(np.abs(np.diff(ky)))])
     
-    
     Nbin=int(kmax/dk)
     ek=np.ones(Nbin)
     k=np.ones(Nbin)
@@ -301,4 +207,3 @@ def getEnergySpectrum(x1,y1,z):
     ekx=np.mean(s,axis=0)
     eky=np.mean(s,axis=1)
     return kx,ekx,ky,eky,k,ek,s
-
