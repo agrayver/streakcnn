@@ -1,7 +1,8 @@
 # Streaks CNN
 We use Convolutional Neural Networks to analyse turbulent fluid flows with streak imaging. Applicable when PIV fails.
 If you use this network or ideas presented here, please cite:
-Super-Duper Paper, AG and JN (?), Journal XXX, 2019
+
+> Particle streak velocimetry using Ensemble Convolutional Neural Networks, A. Grayver and J. Noir, Experiments in Fluids, 2019
 
 ## Dependencies
 
