@@ -7,7 +7,7 @@ If you use this network or ideas presented here, please cite:
 ## Dependencies
 
 * Python > 3.6 with JupyterLab
-* PyTorch > 1.0 (with torchvision)
+* PyTorch > 1.0 
 * Matplotlib > 3.0
 * SciPy > 1.2
 * Scikit-Learn > 0.2
