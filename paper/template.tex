@@ -62,9 +62,9 @@ Insert your abstract here.
 \section{Introduction}
 \label{sec:intro}
 
-Particle Image Velocimetry (PIV) is arguably the most widely used technique to quantitatively study experimental flows \cite{raffel2018particle}. A common work-flow would consist of seeding flow with luminescent particles and taking pairs of pictures with known time separation, which capture an instantaneous flow state. By splitting a pair of images into (possibly overlapping) windows and cross-correlating between the them allows one to infer the direction and magnitude of the flow. With modern computers and digital cameras, PIV has experienced wide adoption in the scientific community \textbf{add refs}. For cross-correlation to work properly, one has to ensure that the exposure time is short enough such that particles do not move more than few pixels at most on an image. Violating this condition, for instance because of insufficient laser intensity or too fast flow, results in so called streaks - traces of particles.
+Particle Image Velocimetry (PIV) is arguably the most widely used technique to quantitatively study experimental flows \cite{raffel2018particle}. A common work-flow would consist of seeding flow with luminescent particles and taking pairs of pictures with a known short time separation to capture an instantaneous flow state. By splitting a pair of images into (possibly overlapping) windows and cross-correlating between them allows one to infer the direction and magnitude of the flow. With modern computers and digital cameras, PIV has experienced wide adoption in the scientific community \textbf{add refs}. For cross-correlation to work properly, one has to ensure that the exposure time is short enough such that particles do not move more than a few pixels and the two images have clearly identifiable correlations, thus the mean motion has to remain predominantly linear. Violating this condition, for instance because of insufficient laser intensity or too fast flow, results in so called streaks - traces of particles.
 
-Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques largely inapplicable. When flow velocity imposes constraints for which the camera and light source at hand cannot capture steady particles, one either has to use a higher speed camera or/and a stronger light source. Both of these solutions have financial and safety constraints, which often cannot be fulfilled. Although not suitable for conventional cross-correlation methods, streak images do contain information about the flow. Although one does not know the direction, information on the mean velocity magnitude and azimuth can be inferred from streak images. There appears to be few attempts to do this, which motivated us to design a method for extracting information about the flow from streaks. 
+Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques less efficient or even inapplicable. When flow velocity imposes constraints for which the camera and light source at hand cannot capture steady particles, one either has to use a higher speed camera or/and a stronger light source. Both of these solutions quickly hit financial and safety constraints, which often cannot be overcome in academia. Although not suitable for conventional cross-correlation methods, streak images do contain information about the flow. A Even though an image with streaks does not contain information about direction of the underlying flow, information on the mean velocity magnitude and azimuth can be inferred from streaks themselves. To the best of authors' knowledge, there have been no attempts to do this before, which motivated us to design a method for extracting information about the flow from streaks. 
 
 To this end, we applied an ensemble of Convolutional Neural Networks (CNN) trained on streak images to draw a statistical prediction of the displacement magnitude and corresponding azimuth. The potential of CNNs has long been recognized for applications related to the face and handwriting recognition \cite{lawrence1997face, simard2003best}, although their power has been fully discovered only recently when deeper (that is, with more layers) networks became feasible to train within reasonable amount of time, mostly due to emerge of Graphic Processor Units (GPUs) \cite{krizhevsky2012imagenet, karpathy2014large}. An interested reader is referred to a recent overview of the deep learning with important development milestones listed \cite{lecun2015deep}.
 
@@ -75,36 +75,40 @@ Before we proceed to describing methodology and results, it is worth to mention 
 
 \subsection{Problem setup}
 
-We aim at inferring the displacement and azimuth from a gray scale image of size $n \times n$ pixels depicting streaks (Figure \ref{fig:fig1}). In real settings, these images are excerpts (obtained, for instance, after applying a sliding window) of a larger $N \times N$ pixels image taken by a camera. For purposes of our experiments, we chose $n = 48$, but the approach presented below is general. We assume that within $n \times n$ window, the velocity is a constant, thus streaks have the same length and direction with small variations, treated as noise. In contrast, the number of streaks ($[2, 10]$), their color intensity ($[200, 255]$, where 0 is black and 255 is white) and thickness ($[2, 4]$ pixels) vary. Additionally, streaks are allowed to go outside the image, which is often the case in real settings, thus a CNN is supposed to be resilient to such cases. The maximum displacement, $r_\textnormal{max}$, of a particle within an image is assumed to be a half of the chosen window size, that is $r_\textnormal{max} = 24$ pixels in our case. Each streak is thus characterized by two numbers $\Delta, \phi$, denoting displacement and azimuth, respectively. 
+We aim at inferring the displacement and azimuth from a gray scale image of size $n \times n$ pixels depicting streaks (Figure \ref{fig:fig1}). In real settings, these images are excerpts (obtained, for instance, after applying a sliding window) of a larger $N \times N$ pixels image taken by a camera. For purposes of our experiments, we chose $n = 48$, but the approach presented below is general. We assume that within $n \times n$ window, the velocity is a constant, thus streaks have the same length and direction with small variations, treated as noise. In contrast, the number of streaks ($[2, 10]$), their color intensity ($[200, 255]$, where 0 is black and 255 is white) and thickness ($[2, 4]$ pixels) vary. Additionally, streaks are allowed to go outside the image, which is often the case in real settings, thus a CNN is supposed to be resilient to such cases. Once streaks are generated, they are blurred with a Gaussian kernel of $3\times 3$ pixels. The maximum displacement, $r_\textnormal{max}$, of a particle within an image is assumed to be half of the chosen window size, that is $r_\textnormal{max} = 24$ pixels in our case. Each streak is thus characterized by two numbers $\Delta, \phi$, denoting displacement and azimuth, respectively. 
 
-To generate train images, we sampled $\Delta$ and $\phi$ from the distributions
+To generate train and validation images, we sampled $\Delta$ and $\phi$ from the uniform distributions
 \begin{equation}
-\Delta \sim \sqrt{U(0, 1)} \cdot r_\textnormal{max}
+\Delta \sim U(1, r_\textnormal{max}) 
 \end{equation}
 and
 \begin{equation}
-\phi \sim U(-\pi/2, \pi/2),
+\phi \sim U(-\pi/2+\delta, \pi/2),
 \end{equation}
-respectively. This choice ensures that we sample a half-circle of radius $r_\textnormal{max}$ uniformly. $\phi = 0$ corresponds to the positive $x$-axis and increases clockwise. Note that limits for $\phi$ cover only half of the circle since we have inherent ambiguity with respect to the direction. Figure \ref{fig:fig1} shows a selection of streak images generated using the stated procedure. The outlined procedure enables generation of millions of images in just a few minutes on a regular PC. 
+respectively. 
+%This choice ensures that we sample a half-circle of radius $r_\textnormal{max}$ uniformly. 
+Here, $\phi = 0$ corresponds to the positive $x$-axis and increases clockwise. 
+Note that limits for $\phi$ cover only half of the circle minus $\delta = 5^{\circ}$ on one end to avoid ambiguity with respect to the direction. Figure \ref{fig:fig1} shows a selection of streak images generated using the stated procedure. The outlined procedure enables generation of millions of images in just a few minutes on a regular PC. 
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure1.png}
-\caption{Subset of generated streak images with corresponding displacements and azimuth angles given in titles used for training and validation.}
+\caption{Subset of generated streak images used for training and validation with corresponding displacements (in pixels) and azimuth angles (in degrees) given in titles.}
 \label{fig:fig1}
 \end{figure}
 
 \subsection{Network architecture and implementation}
 
+Whereas there may exist more efficient architectures, we found that for our problem increasing depth of the network has not improved overall performance significantly, nor did increasing and/or decreasing filter size. Additionally, we found that, in contrast to majority of reported CNN architectures, using the average pooling instead of the max pooling results in higher accuracy.
 
 To prevent overfitting and improve representative power of the network, we added batch normalization at the end of each convolution unit \cite{ioffe2015batch} and dropout with the 30\% drop fraction \cite{srivastava2014dropout}.
 
 \begin{figure}
-\includegraphics[width=\textwidth]{figs/figure2.png}
+\includegraphics[width=\textwidth]{figs/figure_CNN.png}
 \caption{Architecture of the network. Left: sequence of layers and corresponding parameters in the brackets. Each CUNIT layer consists of four actual layers listed in the middle column. Relevant layer parameters are given on the right. Total number of learnable parameters in the network is 44370.}
 \label{fig:fig2}
 \end{figure}
 
-To increase accuracy and robustness of the prediction \cite{hinton2015distilling}, we trained an ensemble of networks, which consists of 10 networks. All networks have identical architecture and parameters, but trained using different randomly chosen initial weights \cite{glorot2010understanding, he2015delving} and shuffled batched, thus forming a unique sequence of batches supplied to ADAM optimizer. The outputs of all models are averaged to get a final prediction.
+To increase accuracy and robustness of the prediction \cite{hinton2015distilling}, we trained an ensemble consisting of ten networks. All networks have identical architecture and parameters, but were trained using different randomly chosen initial weights \cite{glorot2010understanding, he2015delving} and shuffled batches, thus forming a unique sequence of batches supplied to the ADAM optimizer. The outputs of all models are averaged to geta the final prediction.
 
 Finally, the network was implemented using the PyTorch library. The complete implementation can be found using the link below.
 
