@@ -98,27 +98,55 @@ Note that limits for $\phi$ cover only half of the circle minus $\delta = 5^{\ci
 
 \subsection{Network architecture and implementation}
 
-Whereas there may exist more efficient architectures, we found that for our problem increasing depth of the network has not improved overall performance significantly, nor did increasing and/or decreasing filter size. Additionally, we found that, in contrast to majority of reported CNN architectures, using the average pooling instead of the max pooling results in higher accuracy.
+We aim at building a regression CNN that, given a single window image, outputs two real valued numbers, corresponding to the displacement and angle. To this end, we have created a network with the architecture shown in Figure \ref{fig:figcnn}. As can be seen, four convolutional units form the core of the network, each consisting of a convolutional layer, activation layer (in this case, rectified linear unit), average pooling layer served to downsample the input followed by a batch normalization layer. An increasing depth of the convolutional layers is a common practice which is aimed at giving a network freedom to learn more complex features in the input. 
 
-To prevent overfitting and improve representative power of the network, we added batch normalization at the end of each convolution unit \cite{ioffe2015batch} and dropout with the 30\% drop fraction \cite{srivastava2014dropout}.
+To prevent overfitting and improve training speed, we use batch normalization at the end of each convolution unit \cite{ioffe2015batch} and dropout with the 30\% drop fraction \cite{srivastava2014dropout}. Additionally, following common practices, the outputs are standartized and centered. The input grayscale images have a single eight bits channel. We normalized them by 255 to stay in the $(0, 1)$ range.
+
+Whereas there may exist more efficient architectures, we found that for our problem increasing depth of the network has not improved overall performance significantly, nor did increasing and/or decreasing filter sizes. Additionally, we found that, in contrast to majority of reported CNN architectures, using the average pooling instead of the max pooling results in higher accuracy.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure_CNN.png}
 \caption{Architecture of the network. Left: sequence of layers and corresponding parameters in the brackets. Each CUNIT layer consists of four actual layers listed in the middle column. Relevant layer parameters are given on the right. Total number of learnable parameters in the network is 44370.}
-\label{fig:fig2}
+\label{fig:figcnn}
 \end{figure}
 
-To increase accuracy and robustness of the prediction \cite{hinton2015distilling}, we trained an ensemble consisting of ten networks. All networks have identical architecture and parameters, but were trained using different randomly chosen initial weights \cite{glorot2010understanding, he2015delving} and shuffled batches, thus forming a unique sequence of batches supplied to the ADAM optimizer. The outputs of all models are averaged to geta the final prediction.
+To increase accuracy and robustness of the prediction, we trained an ensemble consisting of ten networks \cite{hinton2015distilling}. All networks have the same architecture and parameters, but were trained using different randomly chosen initial weights \cite{glorot2010understanding, he2015delving} and random shuffling to form a unique sequence of batches supplied to an optimizer. The outputs of all models are averaged to geta the final prediction. An ensemble also enables us to calculate a variance, thereby providing a proxy for the uncertainty of a prediction.
 
-Finally, the network was implemented using the PyTorch library. The complete implementation can be found using the link below.
+Finally, the network was implemented using the PyTorch library \cite{paszke2017automatic}. The complete implementation can be found using the link below.
 
 \section{Results}
 
-\subsection{Network accuracy}
+\subsection{Network training and accuracy}
 
-\subsection{Validation with DNS}
+We generated one million images (e.g., Figure \ref{fig:fig1}) of which 75\% and 25\% were used for training and validation, respectively. Each network in the ensemble has been trained for 100 epochs. The ADAM optimizer with an initial learning rate value of 1e-3 was used. The learning rate was halved if no sufficient decrease in the validation loss was observed for the past 10 epochs. To make the training more resistant to potential outliers (e.g. imagine a situation when all streaks cross the window), we chose to minimize the Huber loss \cite{} rather than conventional least-squares functonal. Huber loss represent a hybrid $L_2-L_1$ distribution with a high tolerance to the presence of long tails in the original distribution. 
+Training and validation losses for all networks are shown in Figure XX. We see a typical behaviour of exponential drop in the loss during first epochs, followed by slow flattening curves. No pathologies between training and validation loss were observed, specifically the validation loss remains a bit higher than the training loss, indicating that the network learns some generic features of the dataset. Training of each network took ~90 minutes on a single CPU-GPU system. This modest time suggests that training networks for window sizes larger that the one assumed here is feasible. 
 
-\subsection{Validation with experimental images}
+Figure \ref{fig:fig3} shows RMSE values for all netwokrs seperately as well as the RMSE of the CNN ensemble. It is evident that on the ensemble performs up to ~20\% better than a single network. CNN ensemble achieves the accuracy of 1.05 pixels for the displacement and $8.5^{\circ}$ for the angle predictions, respectively. The latter may seem like a large error, however one should realize that we have the 48 pixels window where limitations in recognizing small rotations are inherent, especially when streaks are short. 
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure2a.png}
+\includegraphics[width=\textwidth]{figs/figure2b.png}
+\caption{Top: RMSE values of individual networks (markers) and CNN ensemble (line) for displacement $\Delta$ and angle $\phi$ calculated on the validation set. Bottom: histograms of the residuals for displacement and angle.}
+\label{fig:fig3}
+\end{figure}
+
+Figure \ref{fig:fig4} show a random selection of validation images with the corresponding CNN emsemble predictions and true values. We see that the ensemble CNN has learned to make accurate prediction even for complex situations when some streaks overlap, join or leave the window. Additionally, Figure \ref{fig:fig5} shows nine worst predictions for the displacement. Most of these cases are associated with situations where originally longer streaks have all been displaced outside the window or multiple streaks coincidentaly joined and formed what appears to be a longer streak. Note that such situations do not represent a failure of the CNN, but rather limitation of the window-based approach adopted in this work. Such situations are likely to occur in experimental images and ufortunately they  leave little chance for a CNN (or any other sliding window approach) to make an accurate prediction. It is worth to note that despite inaccurate displacement prediction, the angle is predicted accurately in most of these cases. We will discuss possible ways to mitigate this in the Conclusions section.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure3.png}
+\caption{Images with the predicted displacement and angle depicted as magenta lines. The true values are given in titles and predicted values in brackets.}
+\label{fig:fig4}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure4.png}
+\caption{Images with the predicted displacement and angle drawn as magenta lines. The true values are given in titles and predicted values in brackets.}
+\label{fig:fig5}
+\end{figure}
+
+\subsection{Application to a numerical simulation}
+
+\subsection{Application to an inertial flow experiment}
 
 \section{Conclusions}
 
@@ -126,7 +154,7 @@ Extension: non-constant velocity (polynomials -> more output variables and possi
 Streak localization and tracking: more complex architectures.
 
 \begin{acknowledgements}
-We thank authors of PyTorch, mathplotlib and h5py python packages for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. The Juoyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
+We thank authors of PyTorch, mathplotlib and h5py libraries for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. The Jupyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
 \end{acknowledgements}
 
 
