@@ -146,12 +146,45 @@ Figure \ref{fig:fig4} show a random selection of validation images with the corr
 
 \subsection{Application to a numerical simulation}
 
+After confirming the excellent performance of the network on the validation set, we turn to a discrete numerical simulation (DNS) of a complex turbulent flow as presented recently by \cite{plumley2016effects}. Figure \ref{fig:fig6} shows original and window-averaged displacement maps calculated from the DNS velocity field with the 50\% window overlap. The window averaged displacement is the best reconstruction we can achieve with the 48x48 pixels window and 50\% overlap used in this work.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure5.png}
+\caption{Original (left) and window averaged (right) displacement maps of the DNS \cite{plumley2016effects} used for validation.}
+\label{fig:fig6}
+\end{figure}
+
+To mitigate the effect of random streaks seeding, we generated 30 streak images using the original DNS velocity (Figure \ref{fig:fig6}, left) and randomly varying streak density, intensity and thickness. The trained CNN ensemble was applied to all images and the resulting averaged reconstruction of both displacement and angle are shown in Figure \ref{fig:fig7}. We see that the reconsctructed images recover the general structure of the flow very well. The only negative effect we see is that the ensemble CNN struggles to predict large displacements. When the displacement reached half of the window size, CNN systematically predicts smaller displacement. The reason for this is not a deficiency of the CNN, but rather the fact that for displacements as large as half the window size it becomes inevitable that most of the streaks go outside the window, thus predicting a smaller displacement is the most rational output. To solve this problem, one can apply a larger window (for instance, 64x64 pixels), although this will reduce the overall resolution. In real experimental sttings, it may be advantageous to apply several window sizes and either choose one or combine obtained results.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure6.png}
+\caption{Original (left) and window averaged (right) displacement maps of the DNS \cite{plumley2016effects} used for validation.}
+\label{fig:fig7}
+\end{figure}
+
+Finally, Figure \ref{fig:fig8} shows one of the streak images with true and predicted streaks for each window position. Generally, ensemble CNN performs very well with some difficulties in regions of large displacements as discussed above and across areas of vertical shearing, where angle predictions become locally less accurate.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure7.png}
+\caption{Streak image generated from the DNS with true and predicted displacement and angle shown as red and yellow lines, respectively.}
+\label{fig:fig8}
+\end{figure}
+
 \subsection{Application to an inertial flow experiment}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure8.png}
+\caption{Streak image generated from the DNS with true and predicted displacement and angle shown as red and yellow lines, respectively.}
+\label{fig:fig9}
+\end{figure}
+
+Ensemble CNN speed is 7 images/sec on the single NVIDIA GoForce GTX 1070Ti. Using more modern GPUs will enable real-time prediction. 
 
 \section{Conclusions}
 
-Extension: non-constant velocity (polynomials -> more output variables and possibly deeper network).
-Streak localization and tracking: more complex architectures.
+We presented an open-source ensemble CNN aimed at quantitatively studying complex experimental flows using streak images. The presented approach can be applied in situations when classic PIV is inaccurate or not possible due to experimental setup limitations. The advantage of the presented approach is the ease of training/validation set generation as well as recovery of the prediction uncertainty through application of the ensemble technique. We foresee that the approach may need an experiment-dependent tailoring to achieve the best performance. According to our experience, this only takes a single day on an average PC equipped with a modern GPU.
+
+The porential extensions of the presented approach may include the use of multiple window sizes, more complex functional parameterizations of the velosity field within the window (e.g., polynomial). Finally, a completely different approach based on image segentation and object localization and/or tracking can be applied to extract information about individual streaks and their evolution. We expect to investigate these techniques in details in our future works.
 
 \begin{acknowledgements}
 We thank authors of PyTorch, mathplotlib and h5py libraries for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. The Jupyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
