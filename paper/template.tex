@@ -56,7 +56,7 @@
 
 \begin{abstract}
 Insert your abstract here. 
-\keywords{Streak analysis \and Neural Networks \and Turbulent Flow}
+\keywords{Streak analysis \and Neural Networks \and Turbulent Flows}
 \end{abstract}
 
 \section{Introduction}
@@ -64,18 +64,18 @@ Insert your abstract here.
 
 Particle Image Velocimetry (PIV) is arguably the most widely used technique to quantitatively study experimental flows \cite{raffel2018particle}. A common work-flow would consist of seeding flow with luminescent particles and taking pairs of pictures with a known short time separation to capture an instantaneous flow state. By splitting a pair of images into (possibly overlapping) windows and cross-correlating between them allows one to infer the direction and magnitude of the flow. With modern computers and digital cameras, PIV has experienced wide adoption in the scientific community \textbf{add refs}. For cross-correlation to work properly, one has to ensure that the exposure time is short enough such that particles do not move more than a few pixels and the two images have clearly identifiable correlations, thus the mean motion has to remain predominantly linear. Violating this condition, for instance because of insufficient laser intensity or too fast flow, results in so called streaks - traces of particles.
 
-Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques less efficient or even inapplicable. When flow velocity imposes constraints for which the camera and light source at hand cannot capture steady particles, one either has to use a higher speed camera or/and a stronger light source. Both of these solutions quickly hit financial and safety constraints, which often cannot be overcome in academia. Although not suitable for conventional cross-correlation methods, streak images do contain information about the flow. A Even though an image with streaks does not contain information about direction of the underlying flow, information on the mean velocity magnitude and azimuth can be inferred from streaks themselves. To the best of authors' knowledge, there have been no attempts to do this before, which motivated us to design a method for extracting information about the flow from streaks. 
+Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques less efficient or even inapplicable. When flow velocity imposes constraints for which the camera and light source at hand cannot capture instantaneous particle positions, one either has to use a higher speed camera or/and a stronger light source. Both of these solutions quickly hit financial and safety constraints, which often cannot be overcome in academia. Therefore, there exists a need for processing technique, which can make use of streak images. Although not suitable for conventional cross-correlation methods, streak images do contain information about the flow. Whereas an image with streaks does not contain information about direction of the underlying flow, information on the mean velocity magnitude and azimuth can be inferred from streaks themselves. To the best of authors' knowledge, there have been no attempts to do this before, which motivated us to design a method for extracting information about the flow from streaks. 
 
 To this end, we applied an ensemble of Convolutional Neural Networks (CNN) trained on streak images to draw a statistical prediction of the displacement magnitude and corresponding azimuth. The potential of CNNs has long been recognized for applications related to the face and handwriting recognition \cite{lawrence1997face, simard2003best}, although their power has been fully discovered only recently when deeper (that is, with more layers) networks became feasible to train within reasonable amount of time, mostly due to emerge of Graphic Processor Units (GPUs) \cite{krizhevsky2012imagenet, karpathy2014large}. An interested reader is referred to a recent overview of the deep learning with important development milestones listed \cite{lecun2015deep}.
 
-Before we proceed to describing methodology and results, it is worth to mention that a crucial ingredient to a success of CNNs is a suitably large training set, which a CNN is supposed to learn from without facing an over-fitting. From this perspective, streak analysis appears almost an ideal problem. Similar to PIV, we make a reasonable assumption that within a sufficiently small interrogation window velocity exhibits simple functional form (for instance, constant or linear function). This allows us to quickly generate an unlimited number of training images. Adding variability in number of streaks per window, their thickness and intensity will well mimic a realistic experimental scenario. Therefore, we can exhaustively sample the parameter space and feed the network with as many sample as needed to attain an acceptable accuracy. The specific numbers and parameters will be discussed in the corresponding sections below.
+Before we proceed to describing methodology and results, it is worth to mention that a crucial ingredient to a success of CNNs is a suitably large training set, which a CNN is supposed to learn from without facing an over-fitting. From this perspective, streak analysis appears almost an ideal problem. Similar to PIV, we make a reasonable assumption that within a sufficiently small interrogation window velocity exhibits simple functional form (for instance, constant or linear function). This allows us to quickly generate an unlimited number of training images. Adding variability in number of streaks per window, their thickness and intensity will mimic a realistic experimental scenario sufficiently well. Therefore, we can exhaustively sample the parameter space and feed the network with as many sample as needed to attain an acceptable accuracy. The specific numbers and parameters will be discussed in the corresponding sections below.
 
 \section{Methods}
 \label{sec:methodology}
 
 \subsection{Problem setup}
 
-We aim at inferring the displacement and azimuth from a gray scale image of size $n \times n$ pixels depicting streaks (Figure \ref{fig:fig1}). In real settings, these images are excerpts (obtained, for instance, after applying a sliding window) of a larger $N \times N$ pixels image taken by a camera. For purposes of our experiments, we chose $n = 48$, but the approach presented below is general. We assume that within $n \times n$ window, the velocity is a constant, thus streaks have the same length and direction with small variations, treated as noise. In contrast, the number of streaks ($[2, 10]$), their color intensity ($[200, 255]$, where 0 is black and 255 is white) and thickness ($[2, 4]$ pixels) vary. Additionally, streaks are allowed to go outside the image, which is often the case in real settings, thus a CNN is supposed to be resilient to such cases. Once streaks are generated, they are blurred with a Gaussian kernel of $3\times 3$ pixels. The maximum displacement, $r_\textnormal{max}$, of a particle within an image is assumed to be half of the chosen window size, that is $r_\textnormal{max} = 24$ pixels in our case. Each streak is thus characterized by two numbers $\Delta, \phi$, denoting displacement and azimuth, respectively. 
+We aim at inferring the displacement and azimuth from a eight bits gray scale image of size $n \times n$ pixels depicting streaks (Figure \ref{fig:fig1}). In real settings, these images are excerpts (obtained, for instance, after applying a sliding window) of a larger $N \times N$ pixels image taken by a camera. For purposes of our experiments, we chose $n = 48$, but the approach presented below is general. We assume that within $n \times n$ window, the velocity is a constant, thus streaks have the same length and direction with small variations, treated as noise. In contrast, the number of streaks ($[2, 10]$), their color intensity ($[90, 255]$, where zero is black and 255 is white) and thickness ($[2, 4]$ pixels) vary. Additionally, streaks are allowed to go outside the image, which is often the case in real settings, thus a CNN is supposed to be resilient to such cases. Once streaks are generated, the within streak intensity is perturbed and the image is blurred with a Gaussian kernel of $3\times 3$ pixels. The maximum displacement, $r_\textnormal{max}$, of a particle within an image is assumed to be half of the chosen window size, that is $r_\textnormal{max} = 24$ pixels in our case. Each streak is thus characterized by two numbers $\Delta, \phi$, denoting displacement and azimuth, respectively. 
 
 To generate train and validation images, we sampled $\Delta$ and $\phi$ from the uniform distributions
 \begin{equation}
@@ -92,15 +92,15 @@ Note that limits for $\phi$ cover only half of the circle minus $\delta = 5^{\ci
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure1.png}
-\caption{Subset of generated streak images used for training and validation with corresponding displacements (in pixels) and azimuth angles (in degrees) given in titles.}
+\caption{Subset of generated streak images used for training and validation with the corresponding displacements (in pixels) and azimuth angles (in degrees) given in the titles.}
 \label{fig:fig1}
 \end{figure}
 
 \subsection{Network architecture and implementation}
 
-We aim at building a regression CNN that, given a single window image, outputs two real valued numbers, corresponding to the displacement and angle. To this end, we have created a network with the architecture shown in Figure \ref{fig:figcnn}. As can be seen, four convolutional units form the core of the network, each consisting of a convolutional layer, activation layer (in this case, rectified linear unit), average pooling layer served to downsample the input followed by a batch normalization layer. An increasing depth of the convolutional layers is a common practice which is aimed at giving a network freedom to learn more complex features in the input. 
+We aim at building a regression CNN that, given a single window image, outputs two real numbers, corresponding to the displacement and angle. To this end, we have created a network with the architecture shown in Figure \ref{fig:figcnn}. As can be seen, four convolutional units form the core of the network, each consisting of a convolutional layer, activation layer (in this case, rectified linear unit), average pooling layer used to downsample the input followed by a batch normalization layer. An increasing depth of the convolutional layers is a common practice which is aimed at giving a network freedom to learn more complex features from the input. 
 
-To prevent overfitting and improve training speed, we use batch normalization at the end of each convolution unit \cite{ioffe2015batch} and dropout with the 30\% drop fraction \cite{srivastava2014dropout}. Additionally, following common practices, the outputs are standartized and centered. The input grayscale images have a single eight bits channel. We normalized them by 255 to stay in the $(0, 1)$ range.
+To prevent overfitting and improve training speed, we used batch normalization at the end of each convolution unit \cite{ioffe2015batch} and dropout layer with the 30\% drop fraction \cite{srivastava2014dropout}. Additionally, following common practices, the outputs are standartized and centered. The input grayscale images have a single eight bits channel. We normalized them by 255 to stay in the $[0, 1]$ range.
 
 Whereas there may exist more efficient architectures, we found that for our problem increasing depth of the network has not improved overall performance significantly, nor did increasing and/or decreasing filter sizes. Additionally, we found that, in contrast to majority of reported CNN architectures, using the average pooling instead of the max pooling results in higher accuracy.
 
@@ -110,27 +110,28 @@ Whereas there may exist more efficient architectures, we found that for our prob
 \label{fig:figcnn}
 \end{figure}
 
-To increase accuracy and robustness of the prediction, we trained an ensemble consisting of ten networks \cite{hinton2015distilling}. All networks have the same architecture and parameters, but were trained using different randomly chosen initial weights \cite{glorot2010understanding, he2015delving} and random shuffling to form a unique sequence of batches supplied to an optimizer. The outputs of all models are averaged to geta the final prediction. An ensemble also enables us to calculate a variance, thereby providing a proxy for the uncertainty of a prediction.
+To increase accuracy and robustness of the prediction, we built an ensemble consisting of ten networks \cite{hinton2015distilling}. All networks have the same architecture and parameters, but were trained using different randomly chosen initial weights \cite{glorot2010understanding, he2015delving} and random shuffling to form a unique sequence of batches supplied to an optimizer. The outputs of all ensemble members are averaged to geta the final prediction. An ensemble also enables us to calculate a variance, thereby providing a proxy for the uncertainty of a prediction.
 
 Finally, the network was implemented using the PyTorch library \cite{paszke2017automatic}. The complete implementation can be found using the link below.
 
 \section{Results}
 
-\subsection{Network training and accuracy}
+\subsection{Network training}
 
-We generated one million images (e.g., Figure \ref{fig:fig1}) of which 75\% and 25\% were used for training and validation, respectively. Each network in the ensemble has been trained for 100 epochs. The ADAM optimizer with an initial learning rate value of 1e-3 was used. The learning rate was halved if no sufficient decrease in the validation loss was observed for the past 10 epochs. To make the training more resistant to potential outliers (e.g. imagine a situation when all streaks cross the window), we chose to minimize the Huber loss \cite{} rather than conventional least-squares functonal. Huber loss represent a hybrid $L_2-L_1$ distribution with a high tolerance to the presence of long tails in the original distribution. 
-Training and validation losses for all networks are shown in Figure XX. We see a typical behaviour of exponential drop in the loss during first epochs, followed by slow flattening curves. No pathologies between training and validation loss were observed, specifically the validation loss remains a bit higher than the training loss, indicating that the network learns some generic features of the dataset. Training of each network took ~90 minutes on a single CPU-GPU system. This modest time suggests that training networks for window sizes larger that the one assumed here is feasible. 
+We generated one million images (e.g., Figure \ref{fig:fig1}) of which 75\% and 25\% were used for training and validation, respectively. Each network in the ensemble has been trained for 100 epochs. The ADAM optimizer with an initial learning rate value of 1e-3 was used. The learning rate was halved if no sufficient decrease in the validation loss was observed for the past 10 epochs. To make the training more resistant to potential outliers (e.g. imagine a situation when all streaks leave the window), we chose to minimize the Huber loss \cite{huber1973robust} rather than conventional least-squares functonal. Huber loss represent a hybrid $L_2-L_1$ distribution with a high tolerance to the presence of long tails in the original distribution. 
+%Training and validation losses for all networks are shown in Figure XX. We see a typical behaviour of exponential drop in the loss during first epochs, followed by slow flattening curves. 
+No pathologies between training and validation loss were observed during the training, specifically the validation loss remains a bit higher than the training loss, indicating that the network learns some generic features of the dataset. Training of each network took ~90 minutes on a single CPU-GPU system. This modest time suggests that training networks for window sizes larger that the one adopted here is feasible. 
 
-Figure \ref{fig:fig3} shows RMSE values for all netwokrs seperately as well as the RMSE of the CNN ensemble. It is evident that on the ensemble performs up to ~20\% better than a single network. CNN ensemble achieves the accuracy of 1.05 pixels for the displacement and $8.5^{\circ}$ for the angle predictions, respectively. The latter may seem like a large error, however one should realize that we have the 48 pixels window where limitations in recognizing small rotations are inherent, especially when streaks are short. 
+Figure \ref{fig:fig3} shows RMSE values for all netwokrs seperately as well as the RMSE of the ensemble. It is evident that the ensemble performs up to ~20\% better than a single network. CNN ensemble achieves the accuracy of 1.05 pixels for the displacement and $8.5^{\circ}$ for the angle predictions, respectively. The latter may seem like a large error, however one should realize that having a $48 \times 48$ pixels window inevitably leads to limitations in recognizing small rotations, especially when streaks are short. 
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure2a.png}
 \includegraphics[width=\textwidth]{figs/figure2b.png}
-\caption{Top: RMSE values of individual networks (markers) and CNN ensemble (line) for displacement $\Delta$ and angle $\phi$ calculated on the validation set. Bottom: histograms of the residuals for displacement and angle.}
+\caption{Top: RMSE values of individual networks (markers) and ensemble (line) for displacement $\Delta$ and angle $\phi$ calculated on the validation set. Bottom: histograms of the residuals for the displacement and angle.}
 \label{fig:fig3}
 \end{figure}
 
-Figure \ref{fig:fig4} show a random selection of validation images with the corresponding CNN emsemble predictions and true values. We see that the ensemble CNN has learned to make accurate prediction even for complex situations when some streaks overlap, join or leave the window. Additionally, Figure \ref{fig:fig5} shows nine worst predictions for the displacement. Most of these cases are associated with situations where originally longer streaks have all been displaced outside the window or multiple streaks coincidentaly joined and formed what appears to be a longer streak. Note that such situations do not represent a failure of the CNN, but rather limitation of the window-based approach adopted in this work. Such situations are likely to occur in experimental images and ufortunately they  leave little chance for a CNN (or any other sliding window approach) to make an accurate prediction. It is worth to note that despite inaccurate displacement prediction, the angle is predicted accurately in most of these cases. We will discuss possible ways to mitigate this in the Conclusions section.
+Figure \ref{fig:fig4} shows a random selection of validation images with the corresponding CNN emsemble predictions and true values. We see that the ensemble CNN has learned to make accurate prediction even for complex situations when some streaks overlap, join or leave the window. Additionally, Figure \ref{fig:fig5} shows nine images which produced the worst predictions of the displacement. Clearly, most of these cases are associated with situations where originally longer streaks have all been displaced outside the window or multiple streaks coincidentaly joined and formed what appears to be a longer streak. Note that such situations do not represent a failure of the CNN, but rather limitation of the window-based approach adopted in this work. Similar situations are likely to occur in experimental images and ufortunately they leave little chance for any sliding window approach to make an accurate prediction. We will discuss possible ways to mitigate this in the Conclusions section. It is worth to note that despite inaccurate displacement prediction, the angle is predicted accurately in most of these cases. 
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure3.png}
@@ -140,13 +141,17 @@ Figure \ref{fig:fig4} show a random selection of validation images with the corr
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure4.png}
-\caption{Images with the predicted displacement and angle drawn as magenta lines. The true values are given in titles and predicted values in brackets.}
+\caption{Same as previous, but showing nine worst prediction in terms of displacement.}
 \label{fig:fig5}
 \end{figure}
 
 \subsection{Application to a numerical simulation}
 
-After confirming the excellent performance of the network on the validation set, we turn to a discrete numerical simulation (DNS) of a complex turbulent flow as presented recently by \cite{plumley2016effects}. Figure \ref{fig:fig6} shows original and window-averaged displacement maps calculated from the DNS velocity field with the 50\% window overlap. The window averaged displacement is the best reconstruction we can achieve with the 48x48 pixels window and 50\% overlap used in this work.
+After confirming the excellent performance of the network on the validation set, we turn to a discrete numerical simulation (DNS) of a complex turbulent flow as presented recently by \cite{plumley2016effects}. 
+
+JEROME: please describe DNS (Ekman, Reynolds, etc...)
+
+Figure \ref{fig:fig6} shows original and window-averaged displacement maps calculated from the DNS velocity field with the 50\% window overlap. The window averaged displacement is the best reconstruction we can possibly achieve with a $48 \times 48$ pixels window and a 50\% overlap used in this study.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure5.png}
@@ -154,7 +159,7 @@ After confirming the excellent performance of the network on the validation set,
 \label{fig:fig6}
 \end{figure}
 
-To mitigate the effect of random streaks seeding, we generated 30 streak images using the original DNS velocity (Figure \ref{fig:fig6}, left) and randomly varying streak density, intensity and thickness. The trained CNN ensemble was applied to all images and the resulting averaged reconstruction of both displacement and angle are shown in Figure \ref{fig:fig7}. We see that the reconsctructed images recover the general structure of the flow very well. The only negative effect we see is that the ensemble CNN struggles to predict large displacements. When the displacement reached half of the window size, CNN systematically predicts smaller displacement. The reason for this is not a deficiency of the CNN, but rather the fact that for displacements as large as half the window size it becomes inevitable that most of the streaks go outside the window, thus predicting a smaller displacement is the most rational output. To solve this problem, one can apply a larger window (for instance, 64x64 pixels), although this will reduce the overall resolution. In real experimental sttings, it may be advantageous to apply several window sizes and either choose one or combine obtained results.
+To reduce subjectivity, we generated 30 randomly seeded streak images using the original DNS velocity (Figure \ref{fig:fig6}, left) and varying streak density, intensity and thickness. The trained CNN ensemble was applied to all images and the resulting averaged reconstruction of both displacement and angle are shown in Figure \ref{fig:fig7}. We see that the reconsctructed images recover the general structure of the flow very well. The only negative effect is that the ensemble CNN struggles to correctly predict large displacements. When the displacement reaches half of the window size, CNN systematically predicts smaller displacement. The reason for this is not a deficiency of the CNN, but rather the fact that for displacements as large as half the window size it becomes very likely that most of the streaks go outside the window, thus a smaller displacement is a rational prediction. To solve this problem, one can apply a larger window (for instance, $64\times 64$ pixels), although this will reduce the overall resolution and may render constant velocity assumption less accurate. In real experimental settings, it may be advantageous to apply several window sizes and either choose one or combine obtained results, depending on a particular experimental setup.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure6.png}
@@ -162,7 +167,7 @@ To mitigate the effect of random streaks seeding, we generated 30 streak images 
 \label{fig:fig7}
 \end{figure}
 
-Finally, Figure \ref{fig:fig8} shows one of the streak images with true and predicted streaks for each window position. Generally, ensemble CNN performs very well with some difficulties in regions of large displacements as discussed above and across areas of vertical shearing, where angle predictions become locally less accurate.
+Finally, Figure \ref{fig:fig8} shows one of the streak images generated from DNS with the true and predicted streaks for each window position. Generally, ensemble CNN performs well. There is, however, accuracy reduction in regions of large displacements for reasons described above and across areas of vertical shearing, where angle predictions become locally less accurate.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure7.png}
@@ -172,24 +177,41 @@ Finally, Figure \ref{fig:fig8} shows one of the streak images with true and pred
 
 \subsection{Application to an inertial flow experiment}
 
+JEROME: please describe experiment
+
+A preprocessing step was necessary for real images to filter out the CCD matrix noise. We achieved this by a simple thresholding of an image at intensity of 50. After that, image was split into overlapping $48\times 48$ pixels windows, resulting in a total of 2400 window images. The ensemble CNN was then applied to predict displacement and angles as well as their standard deviations with the latter serving to be a proxy for the output uncertainties. 
+
 \begin{figure}
-\includegraphics[width=\textwidth]{figs/figure8.png}
-\caption{Streak image generated from the DNS with true and predicted displacement and angle shown as red and yellow lines, respectively.}
-\label{fig:fig9}
+\includegraphics[width=\textwidth]{figs/figure8a.png}
+\caption{Predicted displacement and angle (left) along with their standard deviations (right) inferred from the ensemble CNN for an experimental image shown in Figure \ref{fig:fig10}.}
+\label{fig:fig9a}
 \end{figure}
 
-Ensemble CNN speed is 7 images/sec on the single NVIDIA GoForce GTX 1070Ti. Using more modern GPUs will enable real-time prediction. 
+Figures \ref{fig:fig9a}-\ref{fig:fig9b} show the predictions in the form of maps and histograms, respectively. Figure \ref{fig:fig10} shows the actual experimental image we used and window-centered predictions drawn as lines. First of all, we see that experimental flow exhibits rather involved behaviour, with regions where streaks show non-linear behvaiour of the flow within a window, which violates our initial assumptions. Nonetheless, the ensemble CNN produces coherent and spatially correlated predictions (Figure\ref{fig:fig9a}) It is also interesting to analyse the standard deviation maps (Figure \ref{fig:fig9b}). Large absolute errors in displacement appear to be correlated with regions with fast flow. On the other hand, large uncertainties in the  angle are around regions with velocity shearing, specifically where velocity seems to flip the direction or flow exhibits a non-laminar structure.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure8b.png}
+\caption{Same as above, but in a form of histograms.}
+\label{fig:fig9b}
+\end{figure}
+
+In terms of performance, ensemble CNN attains a speed of seven full images (each totaling to 2400 windows) per second on a NVIDIA GoForce GTX 1070Ti powered PC. This level of performance allows us to comfortably process long sequences of images taken during experiment. Using a more modern GPU will likely also enable real-time predictions at rates of a few dozens of images per second. 
+
+\begin{figure}
+\includegraphics[width=\textwidth]{figs/figure9.png}
+\caption{Streak image taken during an experiment overlain by the predicted displacement and angle shown as red lines.}
+\label{fig:fig10}
+\end{figure}
 
 \section{Conclusions}
 
-We presented an open-source ensemble CNN aimed at quantitatively studying complex experimental flows using streak images. The presented approach can be applied in situations when classic PIV is inaccurate or not possible due to experimental setup limitations. The advantage of the presented approach is the ease of training/validation set generation as well as recovery of the prediction uncertainty through application of the ensemble technique. We foresee that the approach may need an experiment-dependent tailoring to achieve the best performance. According to our experience, this only takes a single day on an average PC equipped with a modern GPU.
+We presented an open-source ensemble CNN aimed at quantitative analysis of complex experimental flows using streak images. The presented approach can be applied in situations when classic PIV is inaccurate or not possible due to experimental setup or hardware limitations. The advantage of the presented approach is the ease of training/validation set generation as well as recovery of the prediction uncertainty through application of the ensemble method. We foresee that the approach may need an experiment-dependent tailoring to achieve the best performance. According to our experience, this only takes a single day on an average PC equipped with a modern GPU and should not represent a practical limitation.
 
-The porential extensions of the presented approach may include the use of multiple window sizes, more complex functional parameterizations of the velosity field within the window (e.g., polynomial). Finally, a completely different approach based on image segentation and object localization and/or tracking can be applied to extract information about individual streaks and their evolution. We expect to investigate these techniques in details in our future works.
+The porential extensions of the presented approach may include the use of multiple window sizes applied to the same image, more complex functional parameterizations of the displacement and angle fields within a window (e.g., polynomial). Finally, a completely different approach based on an image segmentation and object localization and/or tracking can be applied to extract information about individual streaks and their evolution in time. We expect to investigate these directions in details in our future studies.
 
 \begin{acknowledgements}
 We thank authors of PyTorch, mathplotlib and h5py libraries for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. The Jupyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
 \end{acknowledgements}
-
 
 % References
 %\bibliographystyle{spbasic}      % basic style, author-year citations
