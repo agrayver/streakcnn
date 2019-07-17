@@ -5,13 +5,9 @@ As an example, image below shows a number of small images of streaks with corres
 
 ![alt text](paper/figs/figure3.png)
 
-This can be applied to much more complex situations to deduce the kinetic energy and study directionality of the flow. Below is an example of a convenctive turbulent flow with underlying streak image and CNN predicted streaks at a grid of positions:
+This can be applied to much more complex situations to deduce the kinetic energy and study directionality of turbulent flows. Below is an example of a convenctive turbulent flow streak image and corresponding recovery of the displacement by a CNN ensemble
 
-![alt text](paper/figs/figure7.png)
-
-Or, the same flow and predicted one can be displayed color maps
-
-![alt text](paper/figs/figure6.png)
+![alt text](paper/graphical_abstract.png)
 
 ## Referencing 
 If you use this work or ideas presented here, please cite:
