@@ -9,6 +9,10 @@ This can be applied to much more complex situations to deduce the kinetic energy
 
 ![alt text](paper/figs/figure7.png)
 
+Or, the same flow and predicted one can be displayed color maps
+
+![alt text](paper/figs/figure6.png)
+
 ## Referencing 
 If you use this work or ideas presented here, please cite:
 
