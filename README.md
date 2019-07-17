@@ -18,7 +18,7 @@ Feel free to contact us if you have further ideas on the presented topic.
 
 ## Repository content
 
-All relevant functionality is contained in Jupyter Notebooks. Specifically:
+All relevant functionality is contained in the following Jupyter notebooks:
 
 * **generate_CNN_dataset.ipynb**
 
