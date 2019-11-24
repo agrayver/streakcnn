@@ -72,7 +72,7 @@ Particle Image Velocimetry (PIV) is arguably the most widely used technique to q
 For cross-correlation to work properly, one has to ensure that the exposure time is short enough such that particles do not move more than a few pixels and the two images have clearly identifiable correlations \cite{westerweel1997fundamentals}. Violating this condition, for instance because of an insufficient laser intensity or a too fast flow, results in so called streaks - traces of particles.
 
 Streaks in the PIV images are commonly considered an experimental failure since they render cross-correlation techniques less efficient or even inapplicable. When flow velocity imposes constraints for which the camera and light source at hand cannot capture instantaneous particle positions, one either has to use a higher speed camera or/and a stronger light source. Both of these solutions quickly hit financial and safety constraints, which often cannot be overcome in academia. Therefore, there exists a need for processing techniques.
-Although not suitable for conventional cross-correlation methods, streak images do carry information about the flow. Whereas an image with streaks does not contain information about direction of the underlying flow, information on the mean velocity magnitude and azimuth can be inferred from streaks themselves. To the best of authors' knowledge, there are no reliable algorithms to recover quantitative information from streaks images, which motivated us to design a method for extracting information about the flow from streaks. 
+Although not suitable for conventional cross-correlation methods, streak images do carry information about the flow. \old{Whereas an image with streaks does not contain information about direction of the underlying flow, information on the mean velocity magnitude and azimuth can be inferred from streaks themselves. To the best of authors' knowledge, there are no reliable algorithms to recover quantitative information from streaks images, which motivated us to design a method for extracting information about the flow from streaks.} \new{Indeed, the streaks provide quantitative information on the mean velocity magnitude and azimuth of the displacement of the particles over the exposure time of the photography. The only information lost in a streak image in comparison with a pair of PIV images is the direction of the flow, leading to an ambiguity of $180^{\circ}$, no matter which algorithm will be used to analyze the images. We first considered probabilistic Hough transforms \citep{galamhos1999}, a widely used algorithm in computer vision to detect lines in images. However, this approach requires fine tuning for each different test image and often fails at detecting several streaks leading to an incomplete recovery of the information (see the Jupyter notebook \href{https://github.com/agrayver/streakcnn/blob/master/test_Hough_on_DNS_skimage.ipynb}{HoughAppliedToDNS.ipynb} on our GitHub for an example). To the best of authors' knowledge, there are no other reliable algorithms to recover quantitative information from streaks images, which motivated us to design a method for extracting information about the flow from streaks}
 
 To this end, we applied an ensemble of Convolutional Neural Networks (CNN) trained on streak images to draw a statistical prediction of the displacement magnitude and corresponding azimuth. The potential of CNNs has long been recognized for applications related to the face and handwriting recognition \cite{lawrence1997face, simard2003best}, although their power has been fully discovered only recently when deeper (that is, with more layers) networks became feasible to train within reasonable amount of time, mostly due to the emergence of affordable Graphic Processor Units (GPUs) \cite{krizhevsky2012imagenet, karpathy2014large}. An interested reader is referred to a recent overview of the deep learning with important development milestones listed \cite{lecun2015deep}.
 
@@ -151,7 +151,7 @@ It is evident that the ensemble performs up to ~20\% better than a single networ
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure2a.png}
 \includegraphics[width=\textwidth]{figs/figure2b.png}
-\caption{Top: RMSE values of individual networks (markers) and ensemble (line) for displacement $\Delta$ and angle $\phi$ calculated on the validation set. Bottom: histograms of the residuals for the displacement and angle. \new{Histograms for both absolute and relative (i.e., normalized by the true displacement) residuals are shown.}}
+\caption{Top: RMSE values of individual networks (markers) and ensemble (line) for displacement $\Delta$ and angle $\phi$ calculated on the validation set. Bottom: histograms of the residuals for the displacement and angle. \new{Histograms for both absolute and relative (i.e., normalized by the true displacement) residuals are shown.JN>>>WHY IS RMSE STILL IN PIXELS, FROM (3) IT SHOULD BE DIMENSIONLESS}}
 \label{fig:fig3}
 \end{figure}
 
@@ -169,18 +169,19 @@ Figure \ref{fig:fig4} shows a random selection of validation images with the cor
 \label{fig:fig5}
 \end{figure}
 
-\subsection{Application to a numerical simulation}
+\subsection{\old{Application} \new{Validation using synthetic flows from numerical simulations}.}
 
 After confirming the excellent performance of the network on the validation set, we turn to a discrete numerical simulation (3D-DNS) of a complex thermal convection turbulent flow presented recently by \cite{plumley2016effects}. In their paper, the authors simulate rapidly rotating thermal convection in a square box, heated from below and cooled from the top with a vertical gravitational field pointing downward and a vertical axis of rotation. To validate our CNN algorithm, we used a simulation obtained for $E=10^{-7}$, where $E$ is the Ekman number representing the ratio of viscous to rotational effect, and a Raleigh number that is 90 times supercritical. Each velocity field is $192^3$. For the purpose of this study, we extracted the horizontal component of the velocity in a horizontal plane a mid-depth. Due to the limited size of the calculation each velocity component has been interpolate on a $1024\times 1024$ pixels grid. 
 Figure \ref{fig:fig6}-left shows the displacement map obtained from the full DNS for an arbitrary exposure time. Since the CNN will act on ($48\times48$) interrogation windows with the $50\%$ overlap, we apply a sliding window averaging with ($48\times48$) and $50\%$ overlap (Figure \ref{fig:fig6}-right). The window averaged displacement is the best reconstruction we can possibly achieve with a $48 \times 48$ pixels window and a 50\% overlap used in this study, thus all later results will be compared against it.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure5.png}
-\caption{Original (left) and window averaged (right) displacement maps of the DNS \cite{plumley2016effects} used for validation.}
+\caption{Original (left) and window averaged (right) displacement maps of the DNS \cite{plumley2016effects} used for validation. \new{The arrows on the left shows the true horizontal vector field from the DNS.}}
 \label{fig:fig6}
 \end{figure}
 
-To reduce subjectivity, we generated 30 randomly seeded streak images using the original DNS velocity (Figure \ref{fig:fig6}, left) and varying streak density, intensity and thickness as formerly stated. The trained CNN ensemble was applied to all images and the resulting averaged reconstruction of both displacement and angle are shown in Figure \ref{fig:fig7}. We see that the reconstructed images recover the general structure of the flow very well. The only undesired effect is that the ensemble CNN struggles to correctly predict large displacements. When the displacement reaches half of the window size, CNN systematically predicts smaller displacements. The reason for this is not a deficiency of the CNN, but rather the fact that for displacements as large as half the window size it becomes very likely that most of the streaks go outside the window, thus a smaller displacement is a rational prediction. To solve this problem, one could apply a larger window (for instance, $64\times 64$ pixels), although this will reduce the overall resolution and may render constant velocity assumption less accurate. In real experimental settings, it may be advantageous to apply several window sizes and either choose one or combine obtained results, depending on a particular experimental setup.
+To reduce subjectivity, we generated 30 randomly seeded streak images using the original DNS velocity (Figure \ref{fig:fig6}, left) \old{and varying streak density, intensity and thickness as formerly stated}. \new{We first split the image into $48\times48$ pixels subwindows, inside which we calculate the mean linear displacement $\vec{d}=\vec{\bar{u}}dt$, where $\vec{\bar{u}}$ represents the horizontal velocity average over $48\times48$ pixels. In each subwindow we generate a random seeding, varying the density (from 1 to 10 seeds per subwindow) and radius (from 2 to 4 pixels) of the seeds and reconstruct the associated streaks. Finally we apply a Gaussian filter with a kernel of 1 pixel to mimic the natural variability of intensity observed in experimental images. We repeat the entire process to generate 30 independent streak images from the same velocity field. }
+The trained CNN ensemble was applied to all images and the resulting averaged reconstruction of both displacement and angle are shown in Figure \ref{fig:fig7}. We see that the reconstructed images recover the general structure of the flow very well. The only undesired effect is that the ensemble CNN struggles to correctly predict large displacements. When the displacement reaches half of the window size, CNN systematically predicts smaller displacements. The reason for this is not a deficiency of the CNN, but rather the fact that for displacements as large as half the window size it becomes very likely that most of the streaks go outside the window, thus a smaller displacement is a rational prediction. To solve this problem, one could apply a larger window (for instance, $64\times 64$ pixels), although this will reduce the overall resolution and may render constant velocity assumption less accurate. In real experimental settings, it may be advantageous to apply several window sizes and either choose one or combine obtained results, depending on a particular experimental setup.
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure6.png}
@@ -197,7 +198,8 @@ Finally, Figure \ref{fig:fig8} shows one of the streak images generated from DNS
 \end{figure}
 
 \subsection{Application to the flow driven by longitudinal libration in laboratory experiment}\label{experiment}
-Finally, we apply our algorithm to the laboratory experiment depicted in figure \ref{fig:MeisterMSC}. The apparatus consists of a straight cylinder filled with water set in rotation on a turntable at 1Hz. The cavity is 286mm high with a radius of 140mm. The bottom lead is covered with topography made of blocks ($64mm\times64mm\times 8mm$). A second motor is used to oscillate the container on the turntable, resulting in the so-called longitudinal libration. For the purpose of this experimental validation we have set the libration frequency to 1Hz and the amplitude to $34^{\circ}$. 
+Finally, we apply our algorithm to a laboratory experiment depicted in figure \ref{fig:MeisterMSC}. The apparatus consists of a straight cylinder filled with water set in rotation on a turntable at 1Hz. The cavity is 286mm high with a radius of 140mm. The bottom lead is covered with topography made of blocks ($64mm\times64mm\times 8mm$). A second motor is used to oscillate the container on the turntable, resulting in the so-called longitudinal libration.
+\old{For the purpose of this experimental validation we have set the libration frequency to 1 Hz and the amplitude to $34^{\circ}$} \new{In such a system, flows at low libration amplitudes are in the form of linear inertial waves and inertial modes, as the amplitude increases the flows become unstable and eventually saturate with a significant geostrophic component, i.e. mainly two dimensional. For the purpose of this experimental validation we have set the libration frequency to 1Hz and the amplitude to $34^{\circ}$, which corresponds to the geostrophic saturation state aforementioned. }
 
 To obtain the streak images, we use a 1W continuous diode laser to illuminate a horizontal plane of the fluid seeded with fluorescent particles. We record movies of the particles motion at a fixed exposure time of 21ms with a sampling frequency of 30 images per second. We extracted a frame corresponding to a maximum apparent amplitude of the swirling flow (\ref{fig:expImage}).
      
@@ -207,7 +209,7 @@ To obtain the streak images, we use a 1W continuous diode laser to illuminate a 
 	\label{fig:MeisterMSC}
 \end{figure}
 
-A pre-processing step was necessary for real images to filter out the CCD matrix noise. We achieved this by a simple thresholding of an image at intensity of 50. After that, image was split into overlapping $48\times 48$ pixels windows, resulting in a total of 2400 window images. The ensemble CNN was then applied to predict displacements and angles as well as their standard deviations with the latter serving to be a proxy for the output uncertainties. 
+A pre-processing step was necessary for real images to filter out the CCD matrix noise. We achieved this by a simple shareholding of an image at intensity of 50. After that, image was split into overlapping $48\times 48$ pixels windows, resulting in a total of 2400 window images. The ensemble CNN was then applied to predict displacements and angles as well as their standard deviations with the latter serving to be a proxy for the output uncertainties. 
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure8a.png}
@@ -215,10 +217,12 @@ A pre-processing step was necessary for real images to filter out the CCD matrix
 \label{fig:fig9a}
 \end{figure}
 
-Figures \ref{fig:fig9a}-\ref{fig:fig9b} show the predictions in the form of maps and histograms, respectively. Figure \ref{fig:fig10} shows the actual experimental image we used and window-centered predictions drawn as lines. First of all, we see that experimental flow exhibits rather involved behaviour, with regions where streaks show non-linear behvaiour of the flow within a window, which violates our initial assumptions. Nonetheless, the ensemble CNN produces coherent and spatially correlated predictions (Figure \ref{fig:fig9a}). It is also interesting to analyse the standard deviation maps (Figure \ref{fig:fig9b}). Large absolute errors in the displacement map appear to be correlated with regions of fast flow. On the other hand, large uncertainties in the angle occur around regions with vertical velocity shear, as observed in DNS synthetic images, specifically where velocity seems to flip the direction. 
+Figures \ref{fig:fig9a}-\ref{fig:fig9b} show the predictions \old{in the form of maps and histograms, respectively}\new{ of the displacement and azimuth in the form of maps and histograms for one randomly chosen frame of the movie}. Figure \ref{fig:fig10} shows the \old{actual} \new{selected} experimental image we used and window-centered predictions drawn as lines. First of all, we see that experimental flow exhibits rather involved behaviour, with regions where streaks show non-linear behvaiour of the flow within a window, which violates our initial assumptions. Nonetheless, the ensemble CNN produces coherent and spatially correlated predictions (Figure \ref{fig:fig9a}). It is also interesting to analyse the standard deviation maps (Figure \ref{fig:fig9b}). Large absolute errors in the displacement map appear to be correlated with regions of fast flow. On the other hand, large uncertainties in the angle occur around regions with vertical velocity shear, as observed in DNS synthetic images, specifically where velocity seems to flip the direction.
+
+\new{Finally, we applied the CNN ensemble to the entire movie and calculated the mean kinetic energy from the displacement for each frame. Subsequently, Power Spectral Density of the time-series was calculated (Figure \ref{fig:fig10}). As anticipated, we can clearly identify the forcing frequency at 1Hz and the harmonics at 2 and 3Hz resulting from non-linear effects.} 
 
 \begin{figure}
-\includegraphics[width=\textwidth]{figs/figure8b.png}
+\includegraphics[width=\textwidth/2]{figs/figure8b.png}
 \caption{Same as above, but in a form of histograms.}
 \label{fig:fig9b}
 \end{figure}
@@ -231,6 +235,14 @@ In terms of performance, ensemble CNN attains a speed of seven full images (each
 \label{fig:fig10}
 \end{figure}
 
+
+\begin{figure}
+	\includegraphics[width=\textwidth]{figs/figure10.png}
+	\caption{\new{Left: Mean kinetic energy calculated from the displacement in each frame of the movie. Right: Normalized power spectral density of the mean kinetic energy.}}
+	\label{fig:fig10}
+\end{figure}
+
+
 \section{Conclusions}
 
 We presented an open-source ensemble CNN aimed at quantitative analysis of complex experimental flows using streak images. The presented approach can be applied in situations when classical PIV is inaccurate or not possible due to experimental setup or hardware limitations. The advantage of the presented approach is the ease of training/validation set generation as well as recovery of the prediction uncertainty through application of the ensemble method. We foresee that the approach may need an experiment-dependent tailoring to achieve the best performance. According to our experience, this only takes a single day on an average PC equipped with a modern GPU and should not represent a practical limitation.
@@ -238,7 +250,7 @@ We presented an open-source ensemble CNN aimed at quantitative analysis of compl
 The potential extensions of the presented approach may include the use of multiple window sizes applied to the same image, more complex functional parameterizations of the displacement and angle fields within a window (e.g., polynomial). Finally, a completely different approach based on an image segmentation and object localization and/or tracking can be applied to extract information about individual streaks and their evolution in time. We expect to investigate these directions in details in our future studies.
 
 \begin{acknowledgements}
-We thank authors of PyTorch, mathplotlib and h5py libraries for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. The Jupyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
+We thank authors of PyTorch, mathplotlib and h5py libraries for making them available, Meredith Plumley for sharing her DNS data, Adrian Tasistro-Hart for a number of insightful discussions on CNNs. \new{Comments by two anonymous reviewers helped improve the manuscript.} The Jupyter Python notebooks of all programs used in this study can be found here \url{https://github.com/agrayver/streakcnn}.
 \end{acknowledgements}
 
 % References
@@ -255,6 +267,10 @@ We thank authors of PyTorch, mathplotlib and h5py libraries for making them avai
   \providecommand{\doi}[1]{DOI~\discretionary{}{}{}#1}\else
   \providecommand{\doi}{DOI~\discretionary{}{}{}\begingroup
   \urlstyle{rm}\Url}\fi
+
+\bibitem{galamhos1999}
+Galamhos, C., Matas, J. and Kittler, J.: Progressive probabilistic Hough transform for line detection.
+\newblock Proceedings. IEEE Computer Society Conference on Computer Vision and Pattern Recognition, pp. 554--560 (1999)
 
 \bibitem{glorot2010understanding}
 Glorot, X., Bengio, Y.: Understanding the difficulty of training deep
