@@ -18,6 +18,10 @@ from scipy.ndimage.filters import gaussian_filter
 import time
 import skimage
 
+from skimage.transform import probabilistic_hough_line
+from skimage.transform import hough_line, hough_line_peaks
+from skimage.feature import canny
+
 import torch
 import math
 import torchvision
@@ -207,3 +211,29 @@ def getEnergySpectrum(x1,y1,z):
     ekx=np.mean(s,axis=0)
     eky=np.mean(s,axis=1)
     return kx,ekx,ky,eky,k,ek,s
+
+def probHoughTransform(image, threshold=15, line_length=4, line_gap=5):
+    
+    edges = canny(image, 1, 5, 25)
+    lines = probabilistic_hough_line(edges, threshold=15, line_length=4,
+                                     line_gap=5)
+    Dx=[]
+    Dy=[]
+    for line in lines:
+        p0, p1 = line
+        dx=p1[0]-p0[0]
+        dy=p1[1]-p0[1]
+        Dx.append(dx)
+        Dy.append(dy)
+
+            
+    Dx=np.array(Dx)
+    Dy=np.array(Dy)
+    displacement=np.sqrt(Dx**2+Dy**2)
+    angle=np.rad2deg(np.arctan(Dy/Dx))
+    predictionDelta= displacement.mean()
+    predictionAngle=angle.mean()
+    rmsDelta=displacement.std()
+    rmsAngle=angle.std()
+
+    return lines,displacement,angle,predictionDelta,predictionAngle,rmsDelta,rmsAngle

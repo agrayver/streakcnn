@@ -142,7 +142,7 @@ No pathologies between training and validation losses were observed during the t
 
 Figure \ref{fig:fig3} shows RMSE values for all networks seperately as well as the RMSE of the ensemble. \new{RMSE was calculated as} 
 \begin{equation}
-\textnormal{RMSE} = \sqrt{\frac{1}{N}\sum_{i = 1}^N{\left(\frac{x_i - \tilde{x}_i}{\tilde{x}_i}\right)^2}}
+\textnormal{RMSE} = \sqrt{\frac{1}{N}\sum_{i = 1}^N{\left(x_i - \tilde{x}_i\right)^2}}
 \end{equation}
 \new{where $\tilde{x}$ and $x$ are the true and predicted values, respectively, of $\Delta$ or $\phi$.}
 
@@ -151,7 +151,7 @@ It is evident that the ensemble performs up to ~20\% better than a single networ
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure2a.png}
 \includegraphics[width=\textwidth]{figs/figure2b.png}
-\caption{Top: RMSE values of individual networks (markers) and ensemble (line) for displacement $\Delta$ and angle $\phi$ calculated on the validation set. Bottom: histograms of the residuals for the displacement and angle. \new{Histograms for both absolute and relative (i.e., normalized by the true displacement) residuals are shown.JN>>>WHY IS RMSE STILL IN PIXELS, FROM (3) IT SHOULD BE DIMENSIONLESS}}
+\caption{Top: RMSE values of individual networks (markers) and ensemble (line) for displacement $\Delta$ and angle $\phi$ calculated on the validation set. Bottom: histograms of the residuals for the displacement and angle. \new{Histograms for both absolute and relative (i.e., normalized by the true displacement) residuals are shown.}}
 \label{fig:fig3}
 \end{figure}
 
@@ -169,7 +169,7 @@ Figure \ref{fig:fig4} shows a random selection of validation images with the cor
 \label{fig:fig5}
 \end{figure}
 
-\subsection{\old{Application} \new{Validation using synthetic flows from numerical simulations}.}
+\subsection{\old{Application} \new{Validation} using synthetic flows from numerical simulations.}
 
 After confirming the excellent performance of the network on the validation set, we turn to a discrete numerical simulation (3D-DNS) of a complex thermal convection turbulent flow presented recently by \cite{plumley2016effects}. In their paper, the authors simulate rapidly rotating thermal convection in a square box, heated from below and cooled from the top with a vertical gravitational field pointing downward and a vertical axis of rotation. To validate our CNN algorithm, we used a simulation obtained for $E=10^{-7}$, where $E$ is the Ekman number representing the ratio of viscous to rotational effect, and a Raleigh number that is 90 times supercritical. Each velocity field is $192^3$. For the purpose of this study, we extracted the horizontal component of the velocity in a horizontal plane a mid-depth. Due to the limited size of the calculation each velocity component has been interpolate on a $1024\times 1024$ pixels grid. 
 Figure \ref{fig:fig6}-left shows the displacement map obtained from the full DNS for an arbitrary exposure time. Since the CNN will act on ($48\times48$) interrogation windows with the $50\%$ overlap, we apply a sliding window averaging with ($48\times48$) and $50\%$ overlap (Figure \ref{fig:fig6}-right). The window averaged displacement is the best reconstruction we can possibly achieve with a $48 \times 48$ pixels window and a 50\% overlap used in this study, thus all later results will be compared against it.
@@ -185,7 +185,7 @@ The trained CNN ensemble was applied to all images and the resulting averaged re
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure6.png}
-\caption{Original (left) and window averaged (right) displacement maps of the DNS \cite{plumley2016effects} used for validation.}
+\caption{Original (left) and window averaged (right) displacement maps of the DNS \cite{plumley2016effects} used for validation. \new{AG: change bin size for angle. Add hough}}
 \label{fig:fig7}
 \end{figure}
 
@@ -201,7 +201,9 @@ Finally, Figure \ref{fig:fig8} shows one of the streak images generated from DNS
 Finally, we apply our algorithm to a laboratory experiment depicted in figure \ref{fig:MeisterMSC}. The apparatus consists of a straight cylinder filled with water set in rotation on a turntable at 1Hz. The cavity is 286mm high with a radius of 140mm. The bottom lead is covered with topography made of blocks ($64mm\times64mm\times 8mm$). A second motor is used to oscillate the container on the turntable, resulting in the so-called longitudinal libration.
 \old{For the purpose of this experimental validation we have set the libration frequency to 1 Hz and the amplitude to $34^{\circ}$} \new{In such a system, flows at low libration amplitudes are in the form of linear inertial waves and inertial modes, as the amplitude increases the flows become unstable and eventually saturate with a significant geostrophic component, i.e. mainly two dimensional. For the purpose of this experimental validation we have set the libration frequency to 1Hz and the amplitude to $34^{\circ}$, which corresponds to the geostrophic saturation state aforementioned. }
 
-To obtain the streak images, we use a 1W continuous diode laser to illuminate a horizontal plane of the fluid seeded with fluorescent particles. We record movies of the particles motion at a fixed exposure time of 21ms with a sampling frequency of 30 images per second. We extracted a frame corresponding to a maximum apparent amplitude of the swirling flow (\ref{fig:expImage}).
+\old{To obtain the streak images, we use a 1W continuous diode laser to illuminate a horizontal plane of the fluid seeded with fluorescent particles. We record movies of the particles motion at a fixed exposure time of 21ms with a sampling frequency of 30 images per second. We extracted a frame corresponding to a maximum apparent amplitude of the swirling flow (\ref{fig:expImage}).}
+\new{To image the flow, we use a 1W continuous diode laser to illuminate a horizontal plane of the fluid seeded with fluorescent particles. The particles absorb in the green and emit in the orange, by mounting a narrow band pass filter on the lens of the camera we reject the light coming the reflections of the laser on the side walls. While greatly improving the contrast of the images, the use of a band pass filter reduces the amount of light reaching the CCD sensor, as a consequence we must work with relatively large exposure time of 21ms with a sampling frequency of 30 images per second. This limitation leads to streak images as shown in Figure \ref{fig:expImage} rather than sharp images of individual particles more appropriate for PIV. Meanwhile, our CNN algorithm is well suited to extract quantitative information from this type of images. We first apply our algorithm to a single frame prior to analysing image sequence covering 10s of libration in a statistically steady state.}
+
      
 \begin{figure}
 	\includegraphics[width=\textwidth]{figs/figureExperiment.jpg}
@@ -219,10 +221,10 @@ A pre-processing step was necessary for real images to filter out the CCD matrix
 
 Figures \ref{fig:fig9a}-\ref{fig:fig9b} show the predictions \old{in the form of maps and histograms, respectively}\new{ of the displacement and azimuth in the form of maps and histograms for one randomly chosen frame of the movie}. Figure \ref{fig:fig10} shows the \old{actual} \new{selected} experimental image we used and window-centered predictions drawn as lines. First of all, we see that experimental flow exhibits rather involved behaviour, with regions where streaks show non-linear behvaiour of the flow within a window, which violates our initial assumptions. Nonetheless, the ensemble CNN produces coherent and spatially correlated predictions (Figure \ref{fig:fig9a}). It is also interesting to analyse the standard deviation maps (Figure \ref{fig:fig9b}). Large absolute errors in the displacement map appear to be correlated with regions of fast flow. On the other hand, large uncertainties in the angle occur around regions with vertical velocity shear, as observed in DNS synthetic images, specifically where velocity seems to flip the direction.
 
-\new{Finally, we applied the CNN ensemble to the entire movie and calculated the mean kinetic energy from the displacement for each frame. Subsequently, Power Spectral Density of the time-series was calculated (Figure \ref{fig:fig10}). As anticipated, we can clearly identify the forcing frequency at 1Hz and the harmonics at 2 and 3Hz resulting from non-linear effects.} 
+\new{After cjecking that the algorithm behaves well on a single frame, we applied the CNN ensemble to 300 frames taked at 30 fps to capture the temporal evolution of the flow. Subsequently, we calculated the mean kinetic energy from the displacement for each frame and its Power Spectral Density (see Figure \ref{fig:time_series}). As anticipated, we can clearly identify the dominant forcing frequency of 1Hz and the harmonics at 2Hz and 3Hz resulting from non-linear effects.} 
 
 \begin{figure}
-\includegraphics[width=\textwidth/2]{figs/figure8b.png}
+\includegraphics[width=\textwidth]{figs/figure8b.png}
 \caption{Same as above, but in a form of histograms.}
 \label{fig:fig9b}
 \end{figure}
@@ -237,9 +239,9 @@ In terms of performance, ensemble CNN attains a speed of seven full images (each
 
 
 \begin{figure}
-	\includegraphics[width=\textwidth]{figs/figure10.png}
-	\caption{\new{Left: Mean kinetic energy calculated from the displacement in each frame of the movie. Right: Normalized power spectral density of the mean kinetic energy.}}
-	\label{fig:fig10}
+	\includegraphics[width=\textwidth]{figs/figure_libration.png}
+	\caption{\new{Left: Mean flow kinetic energy calculated from the displacement in each frame of the movie. Right: Normalized power spectral density of the mean kinetic energy.}}
+	\label{fig:time_series}
 \end{figure}
 
 
@@ -322,7 +324,7 @@ LeCun, Y., Bengio, Y., Hinton, G.: Deep learning.
 
 \bibitem{MeisterMSC}
 Meister, A.: Effects of boundary topography on the flow forced by libration in
-  longitude in a rotating cylinder, master thesis, ethz, (2018)
+  longitude in a rotating cylinder, master thesis, ETH Zurich, (2018)
 
 \bibitem{paszke2017automatic}
 Paszke, A., Gross, S., Chintala, S., Chanan, G., Yang, E., DeVito, Z., Lin, Z.,
