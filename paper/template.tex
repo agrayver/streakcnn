@@ -223,7 +223,13 @@ A pre-processing step was necessary for real images to filter out the CCD matrix
 
 Figures \ref{fig:fig9a}-\ref{fig:fig9b} show the predictions \old{in the form of maps and histograms, respectively}\new{ of the displacement and azimuth in the form of maps and histograms for one randomly chosen frame of the movie}. Figure \ref{fig:fig10} shows the \old{actual} \new{selected} experimental image we used and window-centered predictions drawn as lines. First of all, we see that experimental flow exhibits rather involved behaviour, with regions where streaks show non-linear behvaiour of the flow within a window, which violates our initial assumptions. Nonetheless, the ensemble CNN produces coherent and spatially correlated predictions (Figure \ref{fig:fig9a}). It is also interesting to analyse the standard deviation maps (Figure \ref{fig:fig9b}). Large absolute errors in the displacement map appear to be correlated with regions of fast flow. On the other hand, large uncertainties in the angle occur around regions with vertical velocity shear, as observed in DNS synthetic images, specifically where velocity seems to flip the direction.
 
-\new{After cjecking that the algorithm behaves well on a single frame, we applied the CNN ensemble to 300 frames taked at 30 fps to capture the temporal evolution of the flow. Subsequently, we calculated the mean kinetic energy from the displacement for each frame and its Power Spectral Density (see Figure \ref{fig:time_series}). As anticipated, we can clearly identify the dominant forcing frequency of 1Hz and the harmonics at 2Hz and 3Hz resulting from non-linear effects.} 
+\new{After cjecking that the algorithm behaves well on a single frame, we applied the CNN ensemble to 300 frames taked at 30 fps to capture the temporal evolution of the flow. Subsequently, we calculated the mean kinetic energy from the displacement for each frame as }
+%
+\begin{equation}
+E = \frac{1}{P}\sum_{i=1}^{P}\left(\Delta_i \frac{l}{\tau}\right)^2,
+\end{equation}
+%
+\new{where $P$ is the number of grid points in a frame, $\Delta_i$ is the $i$-th displacement in pixels, $l = 0.25\cdot 10^{-3}$ m/pixel is the calibration factor from pixels to meters for our optical setup, $\tau = 21$ ms is the exposure time. The timer-series of the mean kinetic energy and its Power Spectral Density are shown in Figure \ref{fig:time_series}. As anticipated, we can clearly identify the dominant forcing frequency of 1Hz and the harmonics at 2Hz and 3Hz resulting from non-linear effects.} 
 
 \begin{figure}
 \includegraphics[width=\textwidth]{figs/figure8b.png}
