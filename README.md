@@ -12,7 +12,8 @@ This can be applied to much more complex situations to deduce the kinetic energy
 ## Referencing 
 If you use this work or ideas presented here, please cite:
 
-> Particle streak velocimetry using Ensemble Convolutional Neural Networks, A. V. Grayver and J. Noir, preprint, arXiv:1907.09766
+> Grayver, A.V., Noir, J. Particle streak velocimetry using ensemble convolutional neural networks. Experiments in Fluids 61, 38 (2020) doi:10.1007/s00348-019-2876-1 
+> [link](https://link.springer.com/article/10.1007%2Fs00348-019-2876-1) [preprint](https://arxiv.org/abs/1907.09766)
 
 Feel free to contact us if you have further ideas on the presented topic.
 
